@@ -35,7 +35,7 @@ export class AuthService {
         },
         sessionId // Link Access Token to the Session
       }, 
-      process.env.JWT_SECRET || 'secret', 
+      process.env.JWT_SECRET || 'default_secret', 
       { expiresIn: '15m' } 
     );
 
