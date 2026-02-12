@@ -1,0 +1,339 @@
+/* src/app/layout/main-layout/main-layout.component.scss */
+
+// Import partials
+@use 'main-layout.sidebar' as sidebar;
+@use 'main-layout.header' as header;
+
+
+// General Layout Structure
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Prevents flex overflow issues */
+}
+
+.content-wrapper {
+  padding: 20px;
+  flex: 1;
+}
+
+// Collapsed State Modifier
+.app-container--sidebar-collapsed {
+  .sidebar {
+    width: var(--sidebar-collapsed-width);
+
+    // Hide text elements when collapsed
+    .sidebar__logo-text,
+    .nav-item__label,
+    .nav-group__label,
+    .sidebar__footer-text {
+      display: none;
+    }
+  }
+
+  .main-content {
+    margin-left: var(--sidebar-collapsed-width);
+  }
+}
+
+.theme-icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  overflow: hidden; // Keep rotating icons inside
+
+  &:hover {
+    background-color: rgba(0,0,0,0.05); // Use a variable if available
+    color: var(--accent-color);
+  }
+
+  &__inner {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    /* This allows the sun/moon to be positioned absolutely on top of each other */
+  }
+
+  svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  // --- Animation Logic ---
+  
+  // 1. Light Mode State (Default)
+  .icon-sun {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+  .icon-moon {
+    opacity: 0;
+    transform: rotate(90deg) scale(0);
+  }
+
+  // 2. Dark Mode State (.is-dark class added)
+  .is-dark {
+    .icon-sun {
+      opacity: 0;
+      transform: rotate(-90deg) scale(0);
+    }
+    .icon-moon {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+  }
+}
+
+/* src/styles/_ui-components.scss (or wherever you placed it) */
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  &__icon {
+    width: 36px;
+    height: 36px;
+    
+    /* 1. Solid Fallback (If variables fail) */
+    background-color: #007bff; 
+    
+    /* 2. Variable Fallback (If gradient fails) */
+    background-color: var(--accent-color);
+
+    /* 3. Gradient */
+    /* We use a simple linear gradient. 
+       Note: We use a slight transparency on the second color to create depth */
+    background: linear-gradient(135deg, var(--accent-color), rgba(0,0,0, 0.2)); 
+    
+    color: #fff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Use the RGB variable for shadow if available, else standard shadow */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    
+    /* Ensure the icon scales correctly */
+    flex-shrink: 0; 
+  }
+
+  /* Target the SVG specifically */
+  &__icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor; /* Uses the text color (white) */
+  }
+
+  &__text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.5px;
+    white-space: nowrap; // Prevent wrapping
+    
+    .highlight {
+      color: var(--accent-color);
+    }
+  }
+}
+
+/* Wrapper for positioning dropdown */
+.header__messages-wrapper {
+  position: relative;
+  --margin-right: 12px;
+}
+
+/* Badge Styling */
+/* Notification Badge on the icon */
+.notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: var(--danger-color);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  height: 18px;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--primary-color); // Match header bg for 'cutout' effect
+}
+
+/* The Dropdown Panel Itself */
+.msg-dropdown {
+  position: absolute;
+  top: calc(100% + 10px); // Position below the header with a small gap
+  right: 0;
+  width: 340px;
+  background: var(--primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  z-index: 1000;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-color);
+
+    h4 {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .view-all-link {
+      font-size: 0.8rem;
+      color: var(--accent-color);
+      cursor: pointer;
+      text-decoration: none;
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  &__body {
+    max-height: 350px;
+    overflow-y: auto;
+    
+    .empty-state {
+      padding: 30px;
+      text-align: center;
+      color: var(--text-secondary);
+      i { font-size: 32px; margin-bottom: 10px; display: block; opacity: 0.5; }
+      p { margin: 0; font-size: 0.9rem; }
+    }
+  }
+}
+
+/* A single message item inside the dropdown */
+.msg-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid var(--border-color);
+
+  &:hover { background-color: var(--bg-color); }
+  &:last-child { border-bottom: none; }
+}
+
+.msg-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.msg-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.msg-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+  .name { font-weight: 600; font-size: 0.9rem; color: var(--text-color); }
+  .time { font-size: 0.75rem; color: var(--text-secondary); }
+}
+
+.msg-preview {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.msg-count {
+  background: var(--danger-color);
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 10px;
+  padding: 2px 6px;
+  margin-left: 8px;
+}
+
+/* Dropdown Animation */
+.fade-in-up {
+  animation: fadeInUp 0.2s ease-out;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ADD THIS TO main-layout.component.scss */
+
+/* Backdrop for mobile sidebar */
+.sidebar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998; // Just below the sidebar
+  animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 992px) {
+  .main-content {
+    // On mobile, the main content should always take full width
+    margin-left: 0 !important;
+  }
+
+  // Override desktop collapsed state on mobile
+  .app-container--sidebar-collapsed {
+    // Ensure text is visible when mobile menu is open, even if desktop was collapsed
+    .nav-item__label, .nav-group__label, .sidebar__footer-text, .app-brand__text {
+      display: inline;
+    }
+  }
+}

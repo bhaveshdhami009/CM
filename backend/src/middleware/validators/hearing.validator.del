@@ -1,0 +1,27 @@
+import { body } from 'express-validator';
+
+export const createHearingValidator = [
+  body('hearing_date')
+    .notEmpty().withMessage('Hearing Date is required')
+    .isISO8601().withMessage('Invalid Date Format'),
+  
+  body('purpose')
+    .trim()
+    .notEmpty().withMessage('Purpose is required')
+    .escape(),
+
+  body('court_room')
+    .optional()
+    .trim()
+    .escape(),
+
+  body('judge_id')
+    .optional({ checkFalsy: true })
+    .isInt().withMessage('Judge ID must be a number')
+    .toInt(),
+
+  body('remarks')
+    .optional()
+    .trim()
+    .escape(),
+];

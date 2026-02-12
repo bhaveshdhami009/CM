@@ -1,0 +1,128 @@
+/* src/app/features/admin/master-data/master-data.component.scss */
+
+@use 'ui-components' as ui;
+@use 'modal'; 
+
+.master-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+// --- Card Header Layout ---
+// We need to target the card__header (from HTML) to align title and controls
+.card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; // Wraps nicely on mobile
+  gap: 15px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-color);
+  }
+}
+
+// --- Controls (Dropdown + Button) ---
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  .table-select {
+    height: 38px; // Match button height
+    padding: 6px 30px 6px 12px; // Extra right padding for arrow
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    min-width: 200px;
+    cursor: pointer;
+    appearance: none; // Hides default browser arrow
+    
+    // Custom Arrow Icon
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='gray' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    
+    &:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.1);
+    }
+  }
+}
+
+// --- Table Filter Row ---
+// This styles the inputs inside the table header
+.filter-row {
+  th {
+    padding: 8px 10px;
+    background-color: var(--bg-color); // Grey background for sub-header
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  input {
+    width: 100%;
+    height: 32px;
+    padding: 4px 10px;
+    
+    // Critical: ensures padding doesn't break width 100%
+    box-sizing: border-box; 
+    
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--primary-color); // Solid bg to stand out against grey header
+    color: var(--text-color);
+    font-size: 0.85rem;
+    outline: none;
+    transition: all 0.2s;
+
+    &::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.7;
+    }
+
+    &:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.15);
+    }
+  }
+}
+
+// --- Loading & Empty States ---
+// Aligning your local classes with the global UI kit look
+.loading-state, 
+.state-message {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  p { margin: 0; font-size: 1.1rem; }
+}
+
+// --- Modal Specifics ---
+.form-group {
+  margin-bottom: 20px;
+  
+  // Ensure ng-select matches standard inputs
+  // (Only needed if not defined globally in styles.scss)
+  ng-select {
+    .ng-select-container {
+      background-color: var(--primary-color);
+      border-color: var(--border-color);
+      color: var(--text-color);
+    }
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

@@ -1,0 +1,18 @@
+export interface CreatePartyDto {
+  first_name: string; // Note: Ensure this matches Entity (snake_case vs camelCase)
+  middle_name?: string;
+  last_name?: string;
+  mobile?: string;
+  mobile2?: string;
+  email?: string;
+  father_name?: string;
+  mother_name?: string;
+  guardian?: string;
+  guardian_relation?: string;
+  address_line_1?: string;
+  address_line_2?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  remarks?: string;
+}

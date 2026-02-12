@@ -1,0 +1,692 @@
+/* src/styles/_ui-components.scss */
+
+// --- 1. CARDS ---
+.card {
+  background-color: var(--primary-color);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden; // Keeps child content inside rounded corners
+
+  &--hoverable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+
+  &__body {
+    padding: 20px;
+  }
+
+  &__header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+
+    h2, h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+  }
+}
+
+// --- 2. TABLES ---
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap; // Prevents ugly wrapping on small screens
+
+  th {
+    text-align: left;
+    padding: 16px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-color); // Sticky headers look better with bg
+  }
+
+  td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+    vertical-align: middle;
+    font-size: 0.95rem;
+  }
+
+  // Hover effect on rows
+  tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+  }
+  
+  // Last row needs no border
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+// --- 3. BADGES & STATUS ---
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &--default { background-color: var(--bg-color); color: var(--text-secondary); border: 1px solid var(--border-color); }
+  
+  // Dynamic Theme Colors using RGBA vars
+  &--primary { background-color: rgba(var(--accent-color-rgb), 0.1); color: var(--accent-color); }
+  &--success { background-color: rgba(40, 167, 69, 0.1); color: #28a745; }
+  &--warning { background-color: rgba(255, 193, 7, 0.15); color: #856404; }
+  &--danger  { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
+  &--info    { background-color: rgba(23, 162, 184, 0.1); color: #17a2b8; }
+}
+
+// --- 4. BUTTONS ---
+/* src/styles/_ui-components.scss */
+
+// ... previous styles ...
+
+// --- 4. BUTTONS ---
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+  
+  background-color: var(--bg-color);   /* Light in Light Mode, Dark in Dark Mode */
+  color: var(--text-color);            /* Dark in Light Mode, White in Dark Mode */
+  border: none;
+  
+  &:hover {
+    background-color: rgba(0,0,0,0.05); /* Slight darken on hover */
+    border-color: var(--text-secondary);
+  }
+
+
+  // Primary Button Variant
+  &--primary {
+    background-color: var(--accent-color);
+    color: #fff;
+    border: 1px solid transparent;
+    
+    &:hover { 
+      filter: brightness(1.1); 
+      box-shadow: 0 4px 12px rgba(var(--accent-color-rgb), 0.3); 
+      background-color: var(--accent-color); // Override default hover
+      border-color: transparent;
+    }
+  }
+
+  // Icon Only Variant
+  &--icon-only {
+    padding: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 50%;
+    
+    &:hover {
+      background-color: rgba(var(--accent-color-rgb), 0.1);
+      color: var(--accent-color);
+    }
+  }
+  
+  // Danger (Solid)
+  &--danger {
+    background-color: var(--danger-color);
+    color: white;
+    &:hover { filter: brightness(1.1); }
+  }
+  
+  &.text-danger {
+    color: var(--danger-color);
+    &:hover { background-color: rgba(220, 53, 69, 0.1); }
+  }
+
+  // Outline Danger (Good for "Revoke", "Delete")
+  &--outline-danger {
+    background-color: transparent;
+    border: 1px solid var(--danger-color);
+    color: var(--danger-color);
+    
+    &:hover {
+      background-color: var(--danger-color);
+      color: white;
+    }
+  }
+
+  // Secondary / Outline Default
+  &--outline {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    
+    &:hover {
+      border-color: var(--text-secondary);
+      background-color: var(--bg-color);
+    }
+  }
+
+  // --- DISABLED STATE (Add this) ---
+  &:disabled, 
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+    transform: none; // Prevent click animation
+
+    // Specific styling for Primary Disabled
+    &.btn--primary {
+      background-color: var(--text-secondary); // Turns it grey
+      color: #fff;
+      
+      &:hover {
+        filter: none; // Remove the brightness hover effect
+        box-shadow: none;
+      }
+    }
+
+    // Specific styling for Icon Buttons Disabled
+    &.btn--icon-only {
+      color: var(--border-color);
+      &:hover {
+        background-color: transparent;
+        color: var(--border-color);
+      }
+    }
+  }
+  
+  &--sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    gap: 6px;
+    
+    i { font-size: 16px; } // Adjust icon size
+  }
+  
+  &--text {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent; // Keeps height consistent with other buttons
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: var(--text-color);
+      border-color: transparent;
+    }
+  }
+}
+
+// --- 5. SEARCH BOX ---
+.search-box {
+  position: relative;
+  
+  &__icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+  }
+
+  &__input {
+    padding: 10px 15px 10px 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    width: 280px;
+    outline: none;
+    transition: width 0.3s ease, border-color 0.2s;
+
+    &:focus {
+      border-color: var(--accent-color);
+      width: 340px; // Expand on focus
+    }
+    
+    // Placeholder fix
+    &::placeholder { color: var(--text-secondary); opacity: 0.7; }
+  }
+}
+
+// --- 6. STATES (Loading / Empty) ---
+.state-message {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  text-align: center;
+
+  &__icon {
+    font-size: 48px;
+    opacity: 0.5;
+    margin-bottom: 15px;
+    color: var(--text-secondary);
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+  }
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0,0,0,0.1);
+  border-left-color: var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+
+// Standard Key-Value pair rows for detail pages
+.detail-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border-color);
+  font-size: 0.95rem;
+  
+  &:last-child { border-bottom: none; }
+  
+  &__label {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  
+  &__value {
+    color: var(--text-color);
+    font-weight: 600;
+    text-align: right;
+    
+    &--highlight { color: var(--danger-color); }
+  }
+}
+
+// --- 8. UTILITIES ---
+.text-danger { color: var(--danger-color) !important; }
+
+
+/* Toggle Switch Component */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+
+  input { 
+    opacity: 0; 
+    width: 0; 
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--border-color);
+    transition: .4s;
+    border-radius: 34px;
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+  }
+
+  input:checked + .slider {
+    background-color: var(--accent-color);
+  }
+
+  input:focus + .slider {
+    box-shadow: 0 0 1px var(--accent-color);
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(24px);
+  }
+}
+
+// --- 9. CHECKBOXES ---
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: var(--text-color);
+  font-size: 0.95rem;
+  user-select: none;
+  
+  /* The actual input element */
+  input[type="checkbox"] {
+    accent-color: var(--accent-color); 
+    appearance: none;
+    -webkit-appearance: none;
+    
+    /* --- THE FIXES --- */
+    margin: 0; /* 1. Remove browser default margins */
+    padding: 0; /* 2. Remove potential padding */
+    box-sizing: border-box; /* 3. Includes border in the 16px width/height */
+    /* ---------------- */
+
+    width: 16px;
+    height: 16px;
+    
+    border: 2px solid var(--border-color); 
+    border-radius: 4px;
+    background-color: var(--bg-color);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      border-color: var(--accent-color);
+    }
+
+    &:checked {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      display: none;
+      
+      /* --- ADJUSTED POSITIONING --- */
+      /* Since we used box-sizing: border-box, the inner area is smaller */
+      left: 5px; 
+      top: 2px;
+      /* ---------------------------- */
+      
+      width: 4px; /* Slightly adjusted for pixel perfection at 16px */
+      height: 8px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    &:checked::after {
+      display: block;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      background-color: var(--border-color);
+      border-color: var(--border-color);
+      cursor: not-allowed;
+    }
+  }
+}
+
+select {
+  display: block;
+  width: 100%;
+  padding: 10px 36px 10px 12px; // Extra right padding for arrow
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-color);
+  background-color: var(--bg-color); // Matches inputs
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  
+  color-scheme: light dark;
+  
+  // Remove native arrow
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  
+  // Add Custom SVG Arrow
+  // We use a neutral gray stroke so it works in Light and Dark mode
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236c757d' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 12px;
+  
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+
+  &:focus {
+    border-color: var(--accent-color);
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15);
+  }
+
+  &:disabled {
+    background-color: rgba(0,0,0,0.05);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+   /* 
+     This styles the dropdown list in Chrome/Edge (Windows/Linux) and Firefox.
+     Note: macOS/Safari often ignores this and uses the system menu.
+  */
+  option {
+    background-color: var(--primary-color); /* White (Light) or Dark Grey (Dark) */
+    color: var(--text-color);
+    
+    /* 
+       Note: Padding here works in Firefox, 
+       but is ignored in Chrome/Edge/Safari 
+    */
+    padding: 10px; 
+  }
+
+  /* Style Group Headers if you use them */
+  optgroup {
+    background-color: var(--primary-color);
+    color: var(--text-secondary);
+    font-weight: 700;
+  }
+}
+
+// --- 11. CUSTOM DROPDOWNS (Autocomplete / Menus) ---
+// Use this for your search results or custom action menus
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 100%; // Matches parent width
+  padding: 5px 0;
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  text-align: left;
+  list-style: none;
+  background-color: var(--primary-color); // Surface color
+  background-clip: padding-box;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  
+  // Scroll handling
+  max-height: 250px;
+  overflow-y: auto;
+  
+  // Animation
+  animation: slideDownFade 0.2s ease-out;
+
+  &__item {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    clear: both;
+    font-weight: 400;
+    color: var(--text-color);
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+    transition: background-color 0.1s;
+    border-bottom: 1px solid var(--border-color); // Optional separator
+    
+    &:last-child { border-bottom: none; }
+
+    &:hover, &:focus {
+      background-color: rgba(var(--accent-color-rgb), 0.08); // Accent tint
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    // Subtext inside an item
+    small, .meta {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+  }
+  
+  // Dark mode specific shadow boost
+  @media (prefers-color-scheme: dark) {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* src/styles/_ui-components.scss */
+
+// ... previous styles ...
+
+// --- 12. DATE & TIME INPUTS ---
+// Targets all date/time inputs globally
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"] {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  
+  // THEME COLORS
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  
+  // CRITICAL: Tells browser to render the calendar popup in Dark Mode
+  color-scheme: light dark;
+  
+  // UX Improvements
+  cursor: pointer; // Show pointer to indicate clickable
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15);
+  }
+
+  // Make the calendar icon respect text color
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    filter: invert(0); // Default for light mode
+  }
+}
+
+// Dark Mode Specific adjustment for the icon
+body.dark-theme {
+  input[type="date"],
+  input[type="datetime-local"] {
+    &::-webkit-calendar-picker-indicator {
+      // Inverts the black icon to white so it's visible on dark bg
+      filter: invert(1); 
+    }
+  }
+}
+
+
+// --- 13. FILE INPUTS ---
+// Styles the ugly native file input
+input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 8px; // Padding around the container
+  font-size: 0.9rem;
+  
+  // Theme Container
+  background-color: var(--bg-color);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+
+  // Style the "Choose File" button part
+  &::file-selector-button {
+    margin-right: 15px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+    color: var(--accent-color);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  &:hover::file-selector-button {
+    background-color: rgba(var(--accent-color-rgb), 0.2);
+  }
+}

@@ -1,0 +1,47 @@
+import { Component } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth';
+
+@Component({
+  selector: 'app-register',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink],
+  templateUrl: './register.html',
+  styleUrl: './register.scss'
+})
+export class RegisterComponent {
+  userData = {
+    fullName: '',
+    email: '',
+    password: ''
+  };
+  errorMessage = '';
+  successMessage = '';
+  isLoading = false; // Added state
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  onSubmit(): void {
+    if (this.isLoading) return;
+
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.authService.register(this.userData).subscribe({
+      next: (response: any) => {
+        this.successMessage = 'Registration successful! Redirecting...';
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      },
+      error: (err: any) => {
+        console.error('Registration failed', err);
+        this.errorMessage = err.error?.message || 'Registration failed. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+}

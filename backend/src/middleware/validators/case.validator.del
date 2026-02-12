@@ -1,0 +1,99 @@
+// src/middleware/validators/case.validator.ts
+
+import { body, CustomValidator } from 'express-validator';
+
+const noDuplicateParties: CustomValidator = (value, { req }) => {
+  const petitionerIds = req.body.petitionerIds || [];
+  const respondentIds = req.body.respondentIds || [];
+
+  const petitionersSet = new Set(petitionerIds);
+
+  for (const id of respondentIds) {
+    if (petitionersSet.has(id)) {
+      // Found a duplicate
+      throw new Error('A party cannot be both a Petitioner and a Respondent in the same case.');
+    }
+  }
+
+  // If no duplicates are found, it's valid
+  return true;
+};
+
+export const createCaseValidator = [
+  body('caseType').notEmpty().withMessage('Case Type is required'),
+  body('courtId').isInt().withMessage('Court is required and must be an ID'),
+  
+    // Validate Petitioner IDs Array
+  body('petitionerIds')
+    .isArray({ min: 1 })
+    .withMessage('At least one Petitioner is selected')
+    .custom(noDuplicateParties), ,
+  
+  // Check that every item inside the array is an Integer
+  body('petitionerIds.*')
+    .isInt()
+    .withMessage('Petitioner IDs must be valid numbers'),
+  
+  // Validate Respondent IDs Array
+  body('respondentIds')
+    .isArray({ min: 1 })
+    .withMessage('At least one Respondent is selected'),
+
+  // Check that every item inside the array is an Integer
+  body('respondentIds.*')
+    .isInt()
+    .withMessage('Respondent IDs must be valid numbers'),
+    
+  body('dlsa.letterNo')
+    .if(body('dlsa').exists())
+    .notEmpty().withMessage('DLSA Letter No is required')
+    .trim().escape(),
+
+  body('dlsa.registrationNo')
+    .if(body('dlsa').exists())
+    .notEmpty().withMessage('DLSA Registration No is required')
+    .trim().escape(),
+
+  body('dlsa.letterDate')
+    .if(body('dlsa').exists())
+    .notEmpty().withMessage('DLSA Letter Date is required')
+    .isISO8601().withMessage('Invalid DLSA Letter Date'),
+
+  // --- NEW: Conditional Validation for Execution ---
+  body('execution.amount')
+    .if(body('execution').exists())
+    .notEmpty().withMessage('Execution Amount is required')
+    .isFloat({ min: 0 }).withMessage('Amount must be positive'),
+
+  body('execution.start_date')
+    .if(body('execution').exists())
+    .notEmpty().withMessage('Execution Start Date is required')
+    .isISO8601().withMessage('Invalid Execution Start Date'),  
+    
+  body('execution.remarks')
+    .if(body('execution').exists())
+    .optional()
+    .trim()
+    .escape(),  
+  
+  // Optional sanitization
+  body('fileNo').optional().trim(),
+  body('filingNo').optional().trim(),
+  //body('courtNo')
+  //  .optional({ nullable: true, checkFalsy: true }) 
+  //  .isInt().withMessage('Court No must be an integer'),
+  
+  body('receivedDate')
+    .optional({ nullable: true, checkFalsy: true })
+    .isISO8601().withMessage('Received Date must be a valid date'),
+  body('caseNo').optional().trim(),
+  body('establishmentId') // Use establishmentId for clarity
+    .optional({ checkFalsy: true }) // Skips validation if value is "", null, 0
+    .isInt().withMessage('Establishment must be a valid ID')
+    .toInt(),
+  body('act').optional().trim(),
+  body('section').optional().trim(),
+  body('remarks').optional().trim(),
+  
+  
+];

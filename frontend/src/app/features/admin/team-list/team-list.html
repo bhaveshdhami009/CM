@@ -1,0 +1,138 @@
+<div class="team-container fade-in">
+  
+  <div class="card">
+    <div class="card__header">
+      
+      <!-- Added .title-group wrapper -->
+      <div class="title-group">
+        <h2>Team Management</h2>
+        <p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem;">
+          Manage users, assign roles, and control access.
+        </p>
+      </div>
+      
+      <button class="btn btn--primary" (click)="openAddModal()">
+        <i class="material-icons">add</i> Add Member
+      </button>
+    </div>
+
+    <div class="card__body" style="padding:0;">
+      
+      <!-- Data Table -->
+      <div class="table-responsive" *ngIf="!isLoading && users.length > 0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+            <tr class="filter-row">
+              <th>
+                <input type="text" [(ngModel)]="filterValues.name" (keyup)="onFilterChange()" placeholder="Filter Name...">
+              </th>
+              <th>
+                <input type="text" [(ngModel)]="filterValues.email" (keyup)="onFilterChange()" placeholder="Filter Email...">
+              </th>
+              <th>
+                <select [(ngModel)]="filterValues.role" (change)="onFilterChange()">
+                  <option value="">All Roles</option>
+                  <option *ngFor="let r of roles" [value]="r.value">{{ r.name }}</option>
+                </select>
+              </th>
+              <th></th> <!-- Actions -->
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of users">
+              <td>
+                <div class="user-info">
+                  <div class="user-info__avatar">{{ u.full_name.charAt(0) | uppercase }}</div>
+                  <span class="user-info__name">{{ u.full_name }}</span>
+                </div>
+              </td>
+              <td style="color: var(--text-secondary);">{{ u.email }}</td>
+              <td>
+                <!-- This dynamic class binding is perfect -->
+                <span class="badge" 
+                      [class.badge--success]="u.role === 8 || u.role === 9"
+                      [class.badge--info]="u.role === 5"
+                      [class.badge--default]="u.role < 5">
+                  {{ getRoleName(u.role) }}
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <button class="btn btn--icon-only" (click)="openEditModal(u)" title="Edit Member">
+                  <i class="material-icons">edit</i>
+                </button>
+                <button class="btn btn--icon-only text-danger" (click)="deleteUser(u)" title="Remove User">
+                  <i class="material-icons">delete_outline</i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- STATES (No changes needed) -->
+      <div *ngIf="!isLoading && users.length === 0" class="state-message">...</div>
+      <div *ngIf="isLoading" class="state-message">...</div>
+
+    </div>
+  </div>
+
+</div>
+
+
+<!-- === MODAL === -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="modal-card__header">
+      <h3>{{ isEditMode ? 'Edit Member' : 'Add New Member' }}</h3>
+      <button class="btn btn--icon-only" (click)="showModal = false">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+    
+    <!-- Reactive Form -->
+    <form [formGroup]="userForm" (ngSubmit)="saveUser()">
+      <div class="modal-card__body">
+        
+        <div class="form-group">
+          <label>Full Name</label>
+          <input formControlName="fullName" type="text" class="form-control" placeholder="e.g. John Doe">
+        </div>
+        
+        <div class="form-group">
+          <label>Email Address</label>
+          <input formControlName="email" type="email" class="form-control" placeholder="john@company.com">
+        </div>
+        
+        <div class="form-group">
+          <label>Password</label>
+          <input formControlName="password" type="password" class="form-control" placeholder="Enter new password">
+          
+          <small class="hint-text" *ngIf="!isEditMode">Leave empty for default: LegalApp@123</small>
+          <small class="hint-text" *ngIf="isEditMode">Leave empty to keep current password.</small>
+        </div>
+        
+        <div class="form-group">
+          <label>Role</label>
+          <select formControlName="role" class="form-control">
+            <option *ngFor="let r of roles" [value]="r.value">{{ r.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-card__footer">
+        <button type="button" class="btn" (click)="showModal = false" style="color: var(--text-secondary)">Cancel</button>
+        <button type="submit" class="btn btn--primary">
+          {{ isEditMode ? 'Update' : 'Add User' }}
+        </button>
+      </div>
+    </form>
+    
+  </div>
+</div>

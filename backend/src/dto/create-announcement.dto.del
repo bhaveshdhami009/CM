@@ -1,0 +1,7 @@
+export interface CreateAnnouncementDto {
+  title: string;
+  message: string;
+  scope: 'GLOBAL' | 'ORG';
+  expires_at?: string; // ISO date string
+  target_org_id?: number; // Optional, for Platform Admin only
+}

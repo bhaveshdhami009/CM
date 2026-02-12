@@ -1,0 +1,35 @@
+import { body } from 'express-validator';
+
+export const createOrgValidator = [
+  body('name').trim().notEmpty().withMessage('Organization Name is required'),
+  body('admin_email').trim().isEmail().withMessage('Valid Admin Email is required'),
+  body('admin_name').trim().notEmpty().withMessage('Admin Name is required'),
+  
+  // Optional sanitization
+  body('address').optional().trim().escape(),
+  body('phone')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isMobilePhone('en-IN') 
+    .withMessage('Phone must be a valid phone number'),
+  body('contact_email')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isEmail().withMessage('Invalid Contact Email Address')
+    .normalizeEmail(),
+];
+
+export const updateOrgValidator = [
+  body('name').trim().notEmpty().withMessage('Organization Name cannot be empty'),
+  body('address').optional().trim().escape(),
+  body('contact_email')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isEmail().withMessage('Invalid Contact Email Address')
+    .normalizeEmail(),
+  body('phone')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isMobilePhone('en-IN') 
+    .withMessage('Phone must be a valid phone number'),
+];

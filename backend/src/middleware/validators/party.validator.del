@@ -1,0 +1,46 @@
+import { body } from 'express-validator';
+
+export const createPartyValidator = [
+  // Required
+  body('first_name').trim().notEmpty().withMessage('First Name is required').escape(),
+
+  // Optional Text Fields
+  body('last_name').optional().trim().escape(),
+  body('middle_name').optional().trim().escape(),
+  body('father_name').optional().trim().escape(),
+  body('mother_name').optional().trim().escape(),
+  
+  // Mobile 1 & 2: Check if it's a valid mobile phone
+  // { checkFalsy: true } ensures that empty strings "" don't trigger errors
+  body('mobile')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isMobilePhone('en-IN') 
+    .withMessage('Mobile 1 must be a valid phone number'),
+
+  body('mobile2')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isMobilePhone('en-IN')
+    .withMessage('Mobile 2 must be a valid phone number'),
+
+  // Email
+  body('email')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isEmail().withMessage('Invalid Email Address')
+    .normalizeEmail(),
+
+  // Pincode (Assuming 6 digit numeric code)
+  body('pincode')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isNumeric().withMessage('Pincode must contain only numbers')
+    .isLength({ min: 6, max: 6 }).withMessage('Pincode must be 6 digits'),
+
+  // Address
+  body('address_line_1').optional().trim().escape(),
+  body('address_line_2').optional().trim().escape(),
+  body('city').optional().trim().escape(),
+  body('state').optional().trim().escape(),
+];

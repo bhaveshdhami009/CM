@@ -1,0 +1,383 @@
+<div class="form-container fade-in">
+  <h2>{{ isEditMode ? 'Edit Case' : 'Create New Case' }}</h2>
+  
+  <!-- Main Form Card -->
+  <form [formGroup]="caseForm" (ngSubmit)="onSubmit()" class="form-card">
+
+    <!-- Basic Details Section -->
+    <section class="form-section">
+      <div class="form-section__header">
+        <h3>Basic Details</h3>
+      </div>
+
+      <!-- Row 1: Identifiers -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>File No</label>
+          <input formControlName="fileNo" type="text" >
+        </div>
+        <div class="form-group">
+          <label>Filing No</label>
+          <input formControlName="filingNo" type="text">
+        </div>
+        <div class="form-group">
+          <label>Filing Date</label>
+          <input formControlName="filingDate" type="date">
+        </div>
+      </div>
+
+      <!-- Row 2: Legal Specifics -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Case Type <span class="required">*</span></label>
+          <ng-select 
+            [items]="caseTypes" 
+            formControlName="caseType"
+            placeholder="Select Type">
+          </ng-select>
+        </div>
+        <div class="form-group">
+          <label>Act</label>
+          <input formControlName="act" type="text">
+        </div>
+        <div class="form-group">
+          <label>Section</label>
+          <input formControlName="section" type="text">
+        </div>
+      </div>
+
+      <!-- Row 3: Location -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>District <span class="required">*</span></label>
+          <ng-select 
+            [items]="districts" 
+            bindLabel="name" 
+            bindValue="id"
+            formControlName="districtId"
+            placeholder="Search District">
+          </ng-select>
+        </div>
+        <div class="form-group">
+          <label>Case No</label>
+          <input formControlName="caseNo" type="text" placeholder="e.g. CS/123/2023">
+        </div>
+        <div class="form-group">
+          <label>Received Date</label>
+          <input formControlName="receivedDate" type="date">
+        </div>
+        
+      </div>
+      
+      <!-- Row 4: Establishment & Admin -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Court <span class="required">*</span></label>
+          <ng-select 
+            [items]="courts" 
+            bindLabel="name" 
+            bindValue="id"
+            formControlName="courtId"
+            placeholder="Search Court">
+          </ng-select>
+        </div>
+        <div class="form-group">
+          <label>Establishment</label>
+          <ng-select 
+            [items]="establishments" 
+            bindLabel="name" 
+            bindValue="id" 
+            formControlName="establishmentId"
+            placeholder="Select Establishment">
+          </ng-select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Option Toggles -->
+    <div class="options-wrapper">
+      <span class="options-label">Includes:</span>
+      
+      <button type="button" 
+              class="btn-toggle-option" 
+              [class.active]="showExecutionFields"
+              (click)="toggleManualExecution()">
+        <i class="material-icons">
+          {{ showExecutionFields ? 'check_box' : 'check_box_outline_blank' }}
+        </i>
+        Execution Details
+      </button>
+    </div>
+
+    <!-- DLSA Section (Conditional) -->
+    <section class="form-section dlsa-section" *ngIf="showDlsaFields" formGroupName="dlsa">
+      <div class="form-section__header">
+        <h3><i class="material-icons">gavel</i> DLSA Details</h3>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Letter No</label>
+          <input formControlName="letterNo" type="text">
+        </div>
+        <div class="form-group">
+          <label>Registration No</label>
+          <input formControlName="registrationNo" type="text">
+        </div>
+        <div class="form-group">
+          <label>Letter Date</label>
+          <input formControlName="letterDate" type="date">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Billed On</label>
+          <input formControlName="billedOn" type="date">
+        </div>
+        <div class="form-group">
+          <label>Payment Received On</label>
+          <input formControlName="receivedOn" type="date">
+        </div>
+      </div>
+
+      <div class="form-group full-width">
+        <label>DLSA Remarks</label>
+        <textarea formControlName="remarks" rows="2" class="form-control"></textarea>
+      </div>
+    </section>
+
+    <!-- Execution Section (Conditional) -->
+    <section class="execution-section" *ngIf="showExecutionFields" formGroupName="execution">
+      <div class="form-section__header">
+        <h3><i class="material-icons">assignment_turned_in</i> Execution Details</h3>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Decree Amount (₹)</label>
+          <input formControlName="amount" type="number">
+        </div>
+        <div class="form-group">
+          <label>Start Date</label>
+          <input formControlName="start_date" type="date">
+        </div>
+        <div class="form-group">
+          <label>Next Due Date</label>
+          <input formControlName="next_due_date" type="date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Execution Remarks</label>
+        <textarea formControlName="remarks" rows="2"></textarea>
+      </div>
+    </section>
+
+
+    <!-- Petitioners Section -->
+    <section class="form-section">
+      <div class="form-section__header">
+        <h3>Petitioners</h3>
+        <!-- Reusing standard button -->
+        <button type="button" class="btn btn--primary" style="padding: 6px 12px; font-size: 0.85rem;" (click)="openAddPartyModal('Petitioner')">
+          <i class="material-icons" style="font-size: 16px;">add</i> New Petitioner
+        </button>
+      </div>
+
+      <!-- 1. Search Box with relative positioning for dropdown -->
+      <div class="form-group">
+        <input [formControl]="petitionerSearchControl" placeholder="Search existing parties by name...">
+        
+        <!-- Search Results Dropdown -->
+        <div class="search-dropdown" *ngIf="petitionerSearchResults.length > 0">
+          <div *ngFor="let p of petitionerSearchResults" (click)="selectParty(p, 'Petitioner')" class="search-dropdown__item">
+            <span class="name">{{ p.first_name }} {{ p.last_name }}</span>
+            <span class="meta">
+              <span *ngIf="p.father_name">S/o {{ p.father_name }}</span>
+              <span *ngIf="p.mobile"> • {{ p.mobile }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Selected List -->
+      <div class="selected-list">
+        <div *ngFor="let p of selectedPetitioners; let i=index" class="party-chip">
+          <span>{{ p.first_name }} {{ p.last_name }}</span>
+          <button type="button" class="btn-remove" (click)="removeParty(i, 'Petitioner')">
+            <i class="material-icons" style="font-size: 16px">close</i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Respondents Section (Duplicate structure of Petitioners) -->
+    <section class="form-section">
+      <div class="form-section__header">
+        <h3>Respondents</h3>
+        <button type="button" class="btn btn--primary" style="padding: 6px 12px; font-size: 0.85rem;" (click)="openAddPartyModal('Respondent')">
+          <i class="material-icons" style="font-size: 16px;">add</i> New Respondent
+        </button>
+      </div>
+
+      <div class="form-group">
+        <input [formControl]="respondentSearchControl" placeholder="Search existing parties by name...">
+        
+        <div class="search-dropdown" *ngIf="respondentSearchResults.length > 0">
+          <div *ngFor="let p of respondentSearchResults" (click)="selectParty(p, 'Respondent')" class="search-dropdown__item">
+            <span class="name">{{ p.first_name }} {{ p.last_name }}</span>
+            <span class="meta">
+              <span *ngIf="p.father_name">F: {{ p.father_name }}</span>
+              <span *ngIf="p.mobile"> • {{ p.mobile }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="selected-list">
+        <div *ngFor="let p of selectedRespondents; let i=index" class="party-chip">
+          <span>{{ p.first_name }} {{ p.last_name }}</span>
+          <button type="button" class="btn-remove" (click)="removeParty(i, 'Respondent')">
+            <i class="material-icons" style="font-size: 16px">close</i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- General Remarks -->
+    <div class="form-group" style="margin-top: 20px;">
+      <label>Case Remarks</label>
+      <textarea formControlName="remarks" rows="3"></textarea>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="submit" [disabled]="!caseForm.valid" class="btn btn--primary" style="width: 100%; justify-content: center;">
+        {{ isEditMode ? 'Update Case' : 'Create Case' }}
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- POPUP MODAL for Adding Party -->
+<!-- We reuse the global modal structure here -->
+<div class="modal-overlay" *ngIf="showPartyModal" (click)="closeModal()">
+  <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()"> <!-- Large modifier -->
+    
+    <div class="modal-card__header">
+      <h3>Add New {{ activeRole }}</h3>
+      <button class="btn btn--icon-only" (click)="closeModal()">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+    
+    <div class="modal-card__body">
+      <form [formGroup]="partyForm">
+        
+          <!-- Identity Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name <span class="required">*</span></label>
+              <input formControlName="first_name">
+              <small class="error-text" *ngIf="partyForm.get('first_name')?.invalid && partyForm.get('first_name')?.touched">
+                First name is required
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Middle Name</label>
+              <input formControlName="middle_name">
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input formControlName="last_name">
+            </div>
+          </div>
+
+          <!-- Parents Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Father's Name</label>
+              <input formControlName="father_name">
+            </div>
+            <div class="form-group">
+              <label>Mother's Name</label>
+              <input formControlName="mother_name">
+            </div>
+          </div>
+
+          <!-- Guardian Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Guardian Name</label>
+              <input formControlName="guardian">
+            </div>
+            <div class="form-group">
+              <label>Relation</label>
+              <input formControlName="guardian_relation" placeholder="e.g. Wife of">
+            </div>
+          </div>
+
+          <!-- Contact Row -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Mobile 1</label>
+              <input formControlName="mobile" placeholder="10 digit number" maxlength="10">
+              <small class="error-text" *ngIf="partyForm.get('mobile')?.hasError('pattern') && partyForm.get('mobile')?.touched">
+                Must be a valid 10-digit number
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Mobile 2</label>
+              <input formControlName="mobile2" placeholder="10 digit number" maxlength="10">
+              <small class="error-text" *ngIf="partyForm.get('mobile2')?.hasError('pattern') && partyForm.get('mobile2')?.touched">
+                Must be a valid 10-digit number
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input formControlName="email" placeholder="client@example.com">
+              <small class="error-text" *ngIf="partyForm.get('email')?.hasError('email') && partyForm.get('email')?.touched">
+                Invalid email format
+              </small>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label>Address</label>
+            <input formControlName="address_line_1" placeholder="Line 1">
+            <input formControlName="address_line_2" placeholder="Line 2" style="margin-top: 5px;">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input formControlName="city">
+            </div>
+            <div class="form-group">
+              <label>State</label>
+              <input formControlName="state">
+            </div>
+            <div class="form-group">
+              <label>Pincode</label>
+              <input formControlName="pincode" maxlength="6">
+              <small class="error-text" *ngIf="partyForm.get('pincode')?.hasError('pattern') && partyForm.get('pincode')?.touched">
+                Must be 6 digits
+              </small>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Remarks</label>
+            <textarea formControlName="remarks" rows="2"></textarea>
+          </div>
+
+        </form>
+
+    </div>
+    <div class="modal-card__footer">
+      <button type="button" class="btn" (click)="closeModal()" style="color: var(--text-secondary)">Cancel</button>
+      <button type="button" class="btn btn--primary" (click)="saveNewParty()" [disabled]="partyForm.invalid">
+        Save & Select
+      </button>
+    </div>
+  </div>
+</div>

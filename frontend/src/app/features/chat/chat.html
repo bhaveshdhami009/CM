@@ -1,0 +1,405 @@
+<div class="chat-layout fade-in">
+  
+  <!-- LEFT: Sidebar -->
+  <aside class="chat-sidebar" [class.hidden-mobile]="!!selectedConvo">
+    <div class="chat-sidebar__header">
+      <h2>Messages</h2>
+      <button class="btn btn--icon-only" (click)="openNewChatModal()">
+        <i class="material-icons">edit_square</i>
+      </button>
+    </div>
+
+    <div class="conversation-list">
+      <div *ngFor="let c of conversations" 
+           class="convo-item" 
+           [class.active]="selectedConvo?.id === c.id"
+           (click)="selectConversation(c)">
+        
+        <div class="avatar">
+          {{ (c.displayName || '?').charAt(0).toUpperCase() }}
+        </div>
+        
+        <div class="convo-info">
+          <div class="convo-info__top">
+            <span class="name">{{ c.displayName }}</span>
+            
+            <!-- Priority: Unread Badge > Pending Badge -->
+            <ng-container *ngIf="(c.unread_count || 0) > 0; else inviteBadge">
+                <span class="badge badge--danger">{{ (c.unread_count || 0) }}</span>
+            </ng-container>
+            
+            <ng-template #inviteBadge>
+                <span class="badge badge--warning" *ngIf="c.myStatus === 'PENDING'">Invite</span>
+            </ng-template>
+          </div>
+          
+          <!-- Last Message Preview -->
+          <!-- Added class for styling -->
+          <div class="convo-info__preview" [class.bold-text]="(c.unread_count || 0) > 0">
+            {{ getLastMessagePreview(c) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT: Chat Window -->
+  <main class="chat-window" [class.active-mobile]="!!selectedConvo">
+    
+    <!-- Empty State -->
+    <div *ngIf="!selectedConvo" class="empty-chat-window">
+      <div class="empty-chat-window__icon">
+        <i class="material-icons">chat_bubble_outline</i>
+      </div>
+      <h3 class="empty-chat-window__title">Select a Conversation</h3>
+      <p class="empty-chat-window__text">Choose a chat from the left panel to start messaging.</p>
+    </div>
+
+    <!-- Active Conversation -->
+    <ng-container *ngIf="selectedConvo">
+      
+      <!-- Header -->
+      <div class="window-header">
+        <button class="btn btn--icon-only mobile-back" (click)="selectedConvo = null">
+          <i class="material-icons">arrow_back</i>
+        </button>
+
+        <div class="avatar-small">{{ selectedConvo.displayName?.charAt(0) }}</div>
+        
+        <div class="header-info">
+          <h3>{{ selectedConvo.displayName }}</h3>
+          <span class="subtitle" *ngIf="selectedConvo.type === 'GROUP'">
+            {{ selectedConvo.participants?.length || 0 }} members
+          </span>
+        </div>
+        
+        <!-- Open Details Modal Trigger -->
+        <button class="btn btn--icon-only" (click)="openDetailsModal()">
+           <i class="material-icons">info_outline</i>
+        </button>
+      </div>
+      
+      <div *ngIf="selectedConvo.myStatus === 'PENDING'" class="invite-banner sticky-banner">
+          <div class="banner-content">
+              <i class="material-icons">mail</i>
+              <p>You have been invited to this chat.</p>
+          </div>
+          <div class="actions">
+            <button class="btn btn--primary btn--sm" (click)="respondToInvite('ACCEPT')">Accept</button>
+            <button class="btn btn--text btn--sm text-danger" (click)="respondToInvite('REJECT')">Reject</button>
+          </div>
+      </div>
+
+      <!-- Messages Area -->
+      <div class="messages-area" #scrollContainer>
+        
+        <div class="load-more-container" *ngIf="hasMoreMessages && messages.length > 0">
+            <button class="btn btn--sm btn--secondary" 
+                    (click)="loadMessages()" 
+                    [disabled]="isLoadingMessages">
+                <i class="material-icons" *ngIf="isLoadingMessages">sync</i>
+                {{ isLoadingMessages ? 'Loading...' : 'Load Previous Messages' }}
+            </button>
+        </div>
+        
+        <div *ngFor="let msg of messages" 
+             class="message-row" 
+             [class.message-row--me]="msg.sender.id === currentUser_id">
+          
+          <div class="bubble">
+            <!-- FIXED: Use full_name from DTO -->
+            <span class="bubble__sender" *ngIf="selectedConvo.type === 'GROUP' && msg.sender.id !== currentUser_id">
+              {{ msg.sender.full_name }}
+            </span>
+            
+            <div class="bubble__content">
+              {{ msg.content }}
+              
+              <div *ngIf="msg.file_path" class="attachment-card" (click)="downloadFile(msg)">
+                 <i class="material-icons">description</i> 
+                 <span>Download Attachment</span>
+              </div>
+            </div>
+            
+            <div class="bubble__footer">
+              <span>{{ msg.created_at | date:'shortTime' }}</span>
+              <i class="material-icons delete-icon" 
+                 *ngIf="msg.sender.id === currentUser_id && !msg.content?.startsWith('🚫')"
+                 (click)="deleteMessage(msg)">delete_outline</i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+  
+        <!-- State 1: I Blocked Them -->
+        <div *ngIf="inputState === 'BLOCKED_BY_ME'" class="blocked-msg-bar">
+            <i class="material-icons">block</i>
+            <span>You have blocked this user. 
+                <a style="text-decoration: underline; cursor: pointer;" 
+                   (click)="unblockUser(selectedConvo.otherUserId)">Unblock</a>
+            </span>
+        </div>
+
+        <!-- State 2: I Received an Invite -->
+        <div *ngIf="inputState === 'PENDING_INVITE'" class="blocked-msg-bar" style="background: #fff3e0; color: #e65100;">
+            <i class="material-icons">mail_outline</i>
+            <span>Please accept or reject the invite above to reply.</span>
+        </div>
+
+        <!-- State 3: Allowed (Includes 'Waiting for Accept' scenario - we let them type) -->
+        <ng-container *ngIf="inputState === 'ALLOWED'">
+            <!-- Banner to remind me they haven't accepted yet (Optional but helpful) -->
+            <div *ngIf="selectedConvo.otherStatus === 'PENDING'" 
+                 style="position: absolute; bottom: 100%; left: 0; width: 100%; background: #f1f1f1; color: #666; font-size: 0.8rem; padding: 5px 10px; border-top: 1px solid #ddd;">
+                <i class="material-icons" style="font-size: 12px; vertical-align: middle;">info</i>
+                User hasn't accepted your request yet.
+            </div>
+
+            <div *ngIf="selectedFile" class="file-preview">
+               <span class="filename">{{ selectedFile.name }}</span>
+               <button class="btn btn--icon-only btn--sm" (click)="selectedFile = null"><i class="material-icons">close</i></button>
+            </div>
+
+            <button class="btn btn--icon-only" (click)="fileInput.click()"><i class="material-icons">attach_file</i></button>
+            <input #fileInput type="file" style="display:none" (change)="onFileSelected($event)">
+            
+            <input [(ngModel)]="messageText" (keyup.enter)="sendMessage()" placeholder="Type a message..." class="msg-input">
+            
+            <button class="btn btn--primary btn--icon-only" (click)="sendMessage()"><i class="material-icons">send</i></button>
+        </ng-container>
+
+        <!-- State 4: Read Only -->
+        <div *ngIf="inputState === 'READ_ONLY'" class="read-only-msg">
+            <span>Messaging disabled.</span>
+        </div>
+
+      </div>
+
+    </ng-container>
+  </main>
+</div>
+
+<div class="modal-overlay" *ngIf="showInviteMessageModal">
+  <div class="modal-card">
+    <div class="modal-card__header">
+      <h3>Send Invitation</h3>
+      <button class="btn btn--icon-only" (click)="showInviteMessageModal = false"><i class="material-icons">close</i></button>
+    </div>
+    
+    <div class="modal-card__body">
+        <p style="margin-bottom: 15px; color: #666;">
+            Start this conversation with a short message so they know who you are.
+        </p>
+        <div class="form-group">
+            <label>Message</label>
+            <textarea [(ngModel)]="inviteMessageText" 
+                      rows="4" 
+                      class="form-control" 
+                      placeholder="Hi, I'd like to discuss..."></textarea>
+        </div>
+    </div>
+
+    <div class="modal-card__footer">
+       <button class="btn btn--text" (click)="showInviteMessageModal = false">Cancel</button>
+       <button class="btn btn--primary" (click)="sendInvite()">Send Request</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- === INFO MODAL === -->
+<div class="modal-overlay" *ngIf="showDetailsModal" (click)="showDetailsModal = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-card__header">
+      <h3>{{ selectedConvo?.type === 'GROUP' ? 'Group Info' : 'Chat Details' }}</h3>
+      <button class="btn btn--icon-only" (click)="showDetailsModal = false"><i class="material-icons">close</i></button>
+    </div>
+    
+    <div class="modal-card__body">
+        
+        <div *ngIf="selectedConvo?.type === 'DM'" class="text-center" style="padding: 20px;">
+            <p>Conversation with <strong>{{ selectedConvo?.displayName }}</strong></p>
+            
+            <!-- Show Block if NOT blocked -->
+            <button *ngIf="!isBlockedByMe" class="btn btn--outline-danger" (click)="blockUser(selectedConvo?.otherUserId)">
+              <i class="material-icons">block</i> Block User
+            </button>
+            
+            <!-- Show Unblock if BLOCKED -->
+            <button *ngIf="isBlockedByMe" class="btn btn--primary" (click)="unblockUser(selectedConvo?.otherUserId)">
+               <i class="material-icons">check_circle</i> Unblock User
+            </button>
+        </div>
+
+        <div *ngIf="selectedConvo?.type === 'GROUP'">
+            <div *ngIf="selectedConvo?.isAdmin" class="setting-row">
+                <label>Who can POST?</label>
+                <div class="flex-row">
+                    <select [(ngModel)]="selectedConvo.min_role_write" class="form-select">
+                        <option *ngFor="let opt of roleOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+                    </select>
+                    <button class="btn btn--sm btn--primary" (click)="updateGroupPermissions()">Save</button>
+                </div>
+            </div>
+            <div class="section-title">Members</div>
+            <div class="user-select-list">
+                <div *ngFor="let p of selectedConvo?.participants" class="user-row">
+                    <!-- FIXED: Use full_name from DTO -->
+                    <div class="avatar-mini">{{ p.user?.full_name?.charAt(0) }}</div>
+                    <span class="name">{{ p.user?.full_name }}</span>
+                    <span class="badge badge--primary" *ngIf="p.is_admin">Admin</span>
+                    
+                    <button class="btn btn--icon-only text-danger" 
+                       style="margin-left: auto;"
+                       *ngIf="selectedConvo?.isAdmin && p.user.id !== currentUser_id && p.user.role < 8"
+                       (click)="removeMemberFromGroup(p.user.id)">
+                       <i class="material-icons">remove_circle_outline</i>
+                    </button>
+                </div>
+            </div>
+
+            <div *ngIf="selectedConvo?.isAdmin" style="margin-top: 20px;">
+                <div class="section-title">Add Member</div>
+                <div class="user-select-list">
+                   <!-- FIXED: This now accesses the getter property eligibleMembers -->
+                   <div *ngFor="let user of eligibleMembers" class="user-row" (click)="addMemberToGroup(user.id)">
+                      <i class="material-icons" style="color: var(--accent-color)">add_circle</i> 
+                      <!-- FIXED: Use full_name assuming User DTO implies it, or fallback to name logic in TS -->
+                      <span class="name">{{ user.full_name }}</span>
+                   </div>
+                   
+                   <div *ngIf="eligibleMembers.length === 0" style="padding:10px; color: #999; font-size: 0.9rem; text-align: center;">
+                      No new members available.
+                   </div>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <button class="btn btn--text text-danger" (click)="deleteGroup()">Delete Group</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- === NEW CHAT MODAL === -->
+<div class="modal-overlay" *ngIf="showNewChatModal" (click)="showNewChatModal = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-card__header">
+      <h3>New Message</h3>
+      <button class="btn btn--icon-only" (click)="showNewChatModal = false"><i class="material-icons">close</i></button>
+    </div>
+    
+    <div class="modal-card__body">
+      
+      <div class="view-switcher" *ngIf="currentUserRole > 1"> 
+          <button class="switcher-btn" [class.active]="!isGroupMode" (click)="isGroupMode = false">Direct Message</button>
+          <button class="switcher-btn" [class.active]="isGroupMode" (click)="isGroupMode = true">Create Group</button>
+      </div>
+      
+      <!-- DM Section (REQ #5: Email Input) -->
+      <div *ngIf="!isGroupMode">
+          <div class="form-group">
+            <label>Start chat by Email</label>
+            <input [(ngModel)]="inviteEmail" 
+                   placeholder="Enter user email..." 
+                   (input)="selectedMemberIds = []"> <!-- Clear selection if typing email -->
+          </div>
+          
+          <ng-container *ngIf="currentUserRole > 1">
+              <div class="divider"><span>OR Select from Team</span></div>
+              
+              <div class="user-select-list">
+                  <div *ngFor="let user of availableUsers" 
+                       class="user-row" 
+                       [class.selected]="selectedMemberIds.includes(user.id)"
+                       (click)="startDM(user.id)"> <!-- FIXED: Passing ID directly -->
+                      
+                      <div class="avatar-mini">{{ user.full_name?.charAt(0) }}</div>
+                      <span class="name">{{ user.full_name }}</span>
+                  </div>
+              </div>
+          </ng-container>
+      </div>
+      
+      <div *ngIf="isGroupMode">
+          <div class="form-group">
+            <label>Group Name</label>
+            <input [(ngModel)]="groupForm.name" placeholder="e.g. Project Alpha">
+          </div>
+
+          <div class="form-group">
+            <label>Who can POST?</label>
+            <select [(ngModel)]="groupForm.min_role_write" class="form-select">
+                <option *ngFor="let opt of roleOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="form-group">
+            <label>Add Members By</label>
+            <div style="display: flex; gap: 20px;">
+                <label class="checkbox">
+                    <input type="radio" name="method" [(ngModel)]="groupCreationMethod" value="MANUAL"> Manual
+                </label>
+                <label class="checkbox">
+                    <input type="radio" name="method" [(ngModel)]="groupCreationMethod" value="ROLE"> By Role
+                </label>
+            </div>
+          </div>
+          
+          <div class="form-group" *ngIf="groupCreationMethod === 'ROLE'">
+            <label>Select Role</label>
+            <select [(ngModel)]="groupForm.auto_add_role" class="form-select">
+                <option [ngValue]="null" disabled>Select Role</option>
+                <option *ngFor="let opt of roleOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+      </div>
+
+      <div *ngIf="(isGroupMode && groupCreationMethod === 'MANUAL')">
+          <div class="section-title" style="margin-top: 15px;">Select People</div>
+          <div class="user-select-list">
+              <div *ngFor="let user of availableUsers" 
+                   class="user-row" 
+                   [class.selected]="isGroupMode && selectedMemberIds.includes(user.id)"
+                   (click)="!isGroupMode ? startDM(user.id) : toggleMemberSelection(user.id)">
+                  
+                  <div class="avatar-mini">{{ user.full_name?.charAt(0) }}</div>
+                  <span class="name">{{ user.full_name }}</span>
+                  
+                  <div *ngIf="isGroupMode">
+                      <i class="material-icons" style="color: var(--accent-color)" *ngIf="selectedMemberIds.includes(user.id)">check_circle</i>
+                      <i class="material-icons" style="color: #ccc" *ngIf="!selectedMemberIds.includes(user.id)">radio_button_unchecked</i>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+    </div>
+
+    <div class="modal-card__footer">
+       <!-- Cancel Button -->
+       <button class="btn btn--text" (click)="showNewChatModal = false">Cancel</button>
+
+       <!-- Start Chat Button (For Email input case) -->
+       <button *ngIf="!isGroupMode" class="btn btn--primary" 
+               (click)="startDM()" 
+               [disabled]="!inviteEmail && selectedMemberIds.length === 0">
+           Start Chat
+       </button>
+
+       <!-- Create Group Button -->
+       <button *ngIf="isGroupMode" class="btn btn--primary" 
+               (click)="createGroup()" 
+               [disabled]="!groupForm.name">
+         Create Group
+       </button>
+    </div>
+  </div>
+</div>

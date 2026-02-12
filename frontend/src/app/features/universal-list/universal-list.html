@@ -1,0 +1,237 @@
+<div class="universal-container fade-in">
+  
+  <!-- Main Card Wrapper -->
+  <div class="card">
+    
+    <!-- Top Bar: Header & Type Selection -->
+    <div class="card__header">
+      <div class="list-header">
+        
+        <div class="list-header__titles">
+          <h1>Universal Explorer</h1>
+          <p class="subtitle">Search across all records</p>
+        </div>
+        
+        <div class="list-header__controls">
+          <label>View:</label>
+          <select [(ngModel)]="selectedType" (change)="switchType()" class="type-select">
+            <option *ngFor="let type of entityTypes" [value]="type">
+              {{ configs[type].label }}
+            </option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card__body" style="padding: 0;"> <!-- Full width table -->
+
+      <!-- SECTION 1: Advanced Filter Builder (Inside Body with padding) -->
+      <div style="padding: 20px;">
+        <div class="filter-panel">
+          <div class="filter-panel__header">
+            <div style="display: flex; align-items: center; gap: 20px;">
+              <h3>Advanced Filters</h3>
+              
+              <!-- Logic Switch -->
+              <div class="logic-switch">
+                <div class="logic-switch__option" 
+                     [class.active]="logicOperator === 'AND'" 
+                     (click)="logicOperator = 'AND'; runSearch()">Match ALL</div>
+                <div class="logic-switch__option" 
+                     [class.active]="logicOperator === 'OR'" 
+                     (click)="logicOperator = 'OR'; runSearch()">Match ANY</div>
+              </div>
+            </div>
+
+            <button class="btn btn--sm" (click)="addFilter()">+ Add Condition</button>
+          </div>
+
+          <!-- Filter Rows -->
+          <div *ngIf="filters.length > 0">
+            <div class="filter-row" *ngFor="let filter of filters; let i=index">
+              
+              <!-- 1. Field Selector -->
+              <select [(ngModel)]="filter.field" (change)="filter.value = ''" class="field-select">
+                <option *ngFor="let f of configs[selectedType].fields" [value]="f.key">
+                  {{ f.label }}
+                </option>
+              </select>
+
+              <!-- 2. Operator Selector -->
+              <select [(ngModel)]="filter.operator" class="op-select">
+                <option value="contains">Contains</option>
+                <option value="equals">Equals</option>
+                <option value="startsWith">Starts With</option>
+                <!-- Show conditional operators -->
+                <ng-container *ngIf="getFieldType(filter.field) === 'date' || getFieldType(filter.field) === 'number'">
+                  <option value="gt">Greater Than</option>
+                  <option value="lt">Less Than</option>
+                </ng-container>
+              </select>
+
+              <!-- 3. Value Input (Dynamic Switch) -->
+              <div class="value-input" style="position: relative;">
+                
+                <!-- Date Input -->
+                <input *ngIf="getFieldType(filter.field) === 'date'" 
+                       type="date" 
+                       [(ngModel)]="filter.value"
+                       style="width: 100%">
+
+                <!-- Boolean Select -->
+                <select *ngIf="getFieldType(filter.field) === 'bool'" [(ngModel)]="filter.value" style="width: 100%">
+                  <option value="true">Yes / Active / True</option>
+                  <option value="false">No / Inactive / False</option>
+                </select>
+
+                <!-- Party Autocomplete -->
+                <div *ngIf="getFieldType(filter.field) === 'party_search'">
+                  <input [(ngModel)]="filter.value" 
+                         (input)="onPartyInput($event, i)" 
+                         (focus)="activeFilterIndex = i" 
+                         (blur)="closeDropdown()"
+                         placeholder="Type name..."
+                         autocomplete="off"
+                         style="width: 100%">
+                  
+                  <div class="autocomplete-dropdown" *ngIf="activeFilterIndex === i && partySearchResults.length > 0">
+                    <div *ngFor="let p of partySearchResults" 
+                         (mousedown)="selectParty(p, i); $event.preventDefault()" 
+                         class="item">
+                      <strong>{{ p.first_name }} {{ p.last_name }}</strong>
+                      <span class="meta" *ngIf="p.father_name">S/o {{ p.father_name }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Default Input -->
+                <input *ngIf="['text', 'number'].includes(getFieldType(filter.field))" 
+                       [(ngModel)]="filter.value" 
+                       (keyup.enter)="runSearch()" 
+                       placeholder="Value..."
+                       style="width: 100%">
+              </div>
+
+              <!-- Remove Button -->
+              <button class="btn btn--icon-only text-danger" (click)="removeFilter(i)">
+                <i class="material-icons">close</i>
+              </button>
+            </div>
+            
+            <div class="filter-actions">
+               <button class="btn btn--primary" (click)="runSearch()">Apply Filters</button>
+            </div>
+          </div>
+          
+          <div *ngIf="filters.length === 0" style="color: var(--text-secondary); font-style: italic; font-size: 0.9rem;">
+            No filters applied. Click 'Add Condition' to start.
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: Data Table -->
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <!-- Header Row -->
+            <tr>
+              <th *ngFor="let col of configs[selectedType].columns">
+                {{ col.label }}
+              </th>
+              <th style="width: 60px;">Link</th>
+            </tr>
+
+            <!-- Inline Filter Row -->
+            <tr class="inline-filter-row">
+              <th *ngFor="let col of configs[selectedType].columns">
+                <input *ngIf="col.searchKey"
+                       [(ngModel)]="filterValues[col.searchKey]" 
+                       (keyup)="onFilterChange()"
+                       [placeholder]="'Filter...'">
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+
+          <tbody *ngIf="!isLoading">
+            <tr *ngFor="let row of dataList">
+              
+              <td *ngFor="let col of configs[selectedType].columns">
+                
+                <!-- Title Type -->
+                <ng-container *ngIf="col.type === 'title'">
+                  <span class="case-title">{{ getTitle(row) }}</span>
+                  <div class="sub-text" *ngIf="selectedType !== 'cases'">{{ row.case?.file_no }}</div>
+                </ng-container>
+
+                <!-- Status Type -->
+                <ng-container *ngIf="col.type === 'status'">
+                   <!-- Using the badge classes from UI Kit -->
+                   <span class="badge" 
+                        [class.badge--warning]="(row.status || '').toLowerCase().includes('pending')"
+                        [class.badge--success]="(row.status || '').toLowerCase().includes('disposed') || (row.status || '').toLowerCase().includes('completed')"
+                        [class.badge--default]="!(row.status || '').toLowerCase().includes('pending') && !(row.status || '').toLowerCase().includes('disposed')">
+                     {{ row.status }}
+                   </span>
+                </ng-container>
+
+                <!-- Standard Text -->
+                <ng-container *ngIf="!col.type">
+                  {{ col.path ? (row[col.path.split('.')[0]]?.[col.path.split('.')[1]]) : row[col.key] }}
+                </ng-container>
+
+                <!-- Date Type -->
+                <ng-container *ngIf="col.type === 'date'">
+                  {{ row[col.key] | date:'mediumDate' }}
+                </ng-container>
+
+                <!-- Boolean / Toggle Type -->
+                <ng-container *ngIf="col.type === 'bool'">
+                  <!-- Editable Toggle -->
+                  <ng-container *ngIf="selectedType === 'logs' && col.key === 'is_pending' && canEdit; else staticBool">
+                      <button class="btn-toggle-status" 
+                              [class.btn-toggle-status--pending]="row[col.key]" 
+                              [class.btn-toggle-status--completed]="!row[col.key]"
+                              (click)="toggleTaskStatus(row)">
+                        <i class="material-icons">
+                          {{ row[col.key] ? 'radio_button_unchecked' : 'check_circle' }}
+                        </i>
+                      </button>
+                  </ng-container>
+                  <!-- Static Icon -->
+                  <ng-template #staticBool>
+                      <i class="material-icons" [style.color]="row[col.key] ? 'var(--accent-color)' : '#ccc'">
+                        {{ row[col.key] ? 'check_circle' : 'cancel' }}
+                      </i>
+                  </ng-template>
+                </ng-container>
+
+              </td>
+
+              <!-- Link Column -->
+              <td>
+                <a [routerLink]="['/cases', getCaseId(row)]" class="btn btn--icon-only" title="Go to Case">
+                  <i class="material-icons">arrow_forward</i>
+                </a>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+        
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="state-message">
+          <div class="spinner"></div>
+          <p class="state-message__text">Loading records...</p>
+        </div>
+        
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && dataList.length === 0" class="state-message">
+          <p class="state-message__text">No records found matching your filters.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

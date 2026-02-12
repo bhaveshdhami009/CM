@@ -1,0 +1,39 @@
+// This interface defines EXACTLY what the frontend is allowed to send.
+// It gives us Type Safety in the Controller and Service.
+export interface CreateCaseDto {
+  fileNo?: string;
+  filingNo?: string;
+  filingDate?: string; // Dates usually come as strings from JSON
+  caseType: string;
+  establishment?: string;
+  caseNo?: string;
+  courtNo?: number;
+  receivedDate?: string;
+  act?: string;
+  section?: string;
+  districtId: number; // Used to filter courts validation
+  courtId: number;
+  remarks?: string;
+  
+  // Parties (Nested DTO logic)
+  petitionerIds: number[];
+  respondentIds: number[];
+  
+  dlsa?: {
+    letterNo?: string;
+    registrationNo?: string;
+    letterDate?: string;
+    remarks?: string;
+    
+    billedOn?: string;   // ISO Date String
+    receivedOn?: string; // ISO Date String
+  }
+  
+  execution?: {
+    amount: number;
+    start_date: string;
+    next_due_date: string;
+    remarks?: string;
+  };
+}
+

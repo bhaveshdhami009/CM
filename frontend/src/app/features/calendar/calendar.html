@@ -1,0 +1,164 @@
+<div class="calendar-container fade-in">
+  
+  <div class="card">
+    
+    <!-- === TOOLBAR === -->
+    <div class="card__header calendar-toolbar">
+      
+      <!-- Left: Title & View Switcher -->
+      <div class="toolbar-group">
+        <h1 class="page-title">Cause List</h1>
+        
+        <div class="view-switcher">
+          <button class="switcher-btn" [class.active]="viewMode === 'month'" (click)="setView('month')">Month</button>
+          <button class="switcher-btn" [class.active]="viewMode === 'week'" (click)="setView('week')">Week</button>
+          <button class="switcher-btn" [class.active]="viewMode === 'day'" (click)="setView('day')">Day</button>
+        </div>
+      </div>
+
+      <!-- Right: Navigation -->
+      <div class="toolbar-group">
+        <button class="btn btn--icon-only" (click)="changeDate(-1)">
+          <i class="material-icons">chevron_left</i>
+        </button>
+        
+        <!-- NATIVE DATE PICKER WRAPPER -->
+        <div class="date-picker-wrapper">
+          <!-- 
+             1. #dateInput: Reference to the hidden native date input
+             2. (click): Calls showPicker() when clicking the label wrapper
+             3. (focus): Also opens it when tabbing into the field
+          -->
+          <input 
+            #dateInput 
+            type="date" 
+            [ngModel]="datePickerValue" 
+            (ngModelChange)="onDatePick($event)"
+            class="native-date-input">
+          
+          <div class="date-label" 
+               (click)="openPicker(dateInput)" 
+               (focus)="openPicker(dateInput)"  
+               tabindex="0">
+            <span class="text">
+              {{ viewMode === 'month' ? (currentDate | date:'MMMM yyyy') : (currentDate | date:'mediumDate') }}
+            </span>
+            <i class="material-icons">arrow_drop_down</i>
+          </div>
+        </div>
+
+        <button class="btn btn--icon-only" (click)="changeDate(1)">
+          <i class="material-icons">chevron_right</i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- === BODY === -->
+    <div class="card__body" style="padding: 0;">
+      
+      <div *ngIf="isLoading" class="state-message"><div class="spinner"></div></div>
+
+      <!-- 1. MONTH VIEW -->
+      <div *ngIf="!isLoading && viewMode === 'month'" class="month-grid">
+        <div class="weekday-header" *ngFor="let d of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']">{{ d }}</div>
+        
+        <div *ngFor="let date of calendarDays" 
+             class="day-cell" 
+             [class.day-cell--muted]="date.getMonth() !== currentDate.getMonth()"
+             [class.day-cell--today]="date.toDateString() === today.toDateString()"
+             (click)="drillDown(date)">
+          
+          <div class="day-number">{{ date | date:'d' }}</div>
+          
+          <div class="month-events">
+            <!-- 
+               UPDATED: Using [ngClass]="getGroupStatusClass(...)"
+               This applies the background color logic to the whole pill
+            -->
+            <div *ngFor="let group of getMonthCellData(date) | slice:0:3" 
+                 class="month-event-row"
+                 [ngClass]="getGroupStatusClass(group.events)">
+                 
+                 <span class="month-event-title" title="{{ getCaseTitle(group.case) }}">
+                    <strong *ngIf="group.events.length > 1">({{ group.events.length }})</strong>
+                    <strong *ngIf="group.events.length === 1">{{ group.events[0].title }}</strong>
+                    <span class="case-name"> - {{ getCaseTitle(group.case) }}</span>
+                 </span>
+            </div>
+            
+            <div *ngIf="getMonthCellData(date).length > 3" class="more-link">
+              +{{ getMonthCellData(date).length - 3 }} more
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. WEEK VIEW -->
+      <div *ngIf="!isLoading && viewMode === 'week'" class="week-grid">
+        <div *ngFor="let date of weekDays" class="week-column">
+          <div class="week-column__header" [class.today]="date.toDateString() === today.toDateString()" (click)="drillDown(date)">
+            <span class="day-name">{{ date | date:'EEE' }}</span>
+            <span class="day-num">{{ date | date:'d' }}</span>
+          </div>
+
+          <div class="week-column__body">
+            <div *ngFor="let group of getEventsForDateGroupedByCase(date)" class="week-card">
+               <a [routerLink]="['/cases', group.caseInfo.id]" class="case-link">{{ getCaseTitle(group.caseInfo) }}</a>
+               
+               <!-- UPDATED: Single Events in Week View -->
+               <div *ngFor="let event of group.events" 
+                    class="week-event-item"
+                    [ngClass]="getEventClass(event)">
+                  <span class="time" *ngIf="event.type !== 'case_filed'">{{ event.event_date | date:'shortTime' }}</span>
+                  <span class="type-text">{{ event.title }}</span>
+               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. DAY VIEW -->
+      <div *ngIf="!isLoading && viewMode === 'day'" class="day-view">
+        <div *ngFor="let group of groupedDayEvents" class="day-card">
+            <div class="day-card__header">
+              <div class="info">
+                  <a [routerLink]="['/cases', group.caseInfo.id]" class="title">{{ getCaseTitle(group.caseInfo) }}</a>
+                  <div class="meta">
+                      <span *ngIf="group.caseInfo.file_no">{{ group.caseInfo.file_no }}</span>
+                      <span *ngIf="group.caseInfo.court"> • {{ group.caseInfo.court.name }}</span>
+                  </div>
+              </div>
+              <a [routerLink]="['/cases', group.caseInfo.id]" class="btn btn--icon-only"><i class="material-icons">arrow_forward</i></a>
+            </div>
+
+            <div class="day-card__body">
+                <div *ngFor="let event of group.events" class="timeline-row">
+                  <div class="time">
+                    {{ (event.type === 'hearing' || event.type === 'log') ? (event.event_date | date:'shortTime') : 'All Day' }}
+                  </div>
+                  
+                  <!-- UPDATED: Details box background -->
+                  <div class="details" [ngClass]="getEventClass(event)">
+                      <div class="top">
+                          <i class="material-icons type-icon">
+                              {{ event.type === 'hearing' ? 'gavel' : event.type === 'execution' ? 'assignment' : event.is_pending ? 'pending_actions' : 'task_alt' }}
+                          </i>
+                          <span class="badge-title">{{ event.title }}</span>
+                          <span class="room" *ngIf="event.court_room">Room: {{ event.court_room }}</span>
+                      </div>
+                      <div class="remarks" *ngIf="event.remarks">{{ event.remarks }}</div>
+                      <div class="outcome" *ngIf="event.outcome"><strong>Outcome:</strong> {{ event.outcome }}</div>
+                  </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="groupedDayEvents.length === 0" class="state-message">
+          <i class="material-icons state-message__icon">event_available</i>
+          <p class="state-message__text">No events scheduled for {{ currentDate | date:'fullDate' }}.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

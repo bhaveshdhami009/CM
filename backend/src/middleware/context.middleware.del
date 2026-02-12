@@ -1,0 +1,11 @@
+import { Request, Response, NextFunction } from 'express';
+import { requestContext } from '../utils/context.js';
+import { AuthRequest } from './auth.middleware.js';
+
+export const contextMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+  // Wrap the request in the context
+  requestContext.run({ user: req.user! }, () => {
+    next();
+  });
+};
+

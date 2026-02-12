@@ -1,0 +1,664 @@
+<div class="case-detail-container" *ngIf="!isLoading && caseData">
+  
+  <!-- Header -->
+  <div class="detail-header">
+    <div class="detail-header__content">
+      <div class="detail-header__breadcrumbs">
+        <a routerLink="/dashboard">Cases</a> / {{ caseData.file_no || 'No File No' }}
+      </div>
+      <h1>
+        {{ formattedCaseTitle }}
+        
+        <div class="btn-group">
+          <a [routerLink]="['/cases/edit', caseData.id]" class="btn btn--icon-only" title="Edit Case">
+            <i class="material-icons">edit</i>
+          </a>
+          <!-- Added text-danger utility -->
+          <button class="btn btn--icon-only text-danger" (click)="deleteCase()" title="Delete Case">
+            <i class="material-icons">delete</i>
+          </button>
+        </div>
+      </h1>
+    </div>
+    
+    <!-- Status Badge -->
+    <span class="badge" 
+          [class.badge--success]="caseData.status.toLowerCase().includes('disposed')"
+          [class.badge--warning]="caseData.status.toLowerCase().includes('pending')"
+          [class.badge--danger]="caseData.status.toLowerCase().includes('next')"
+          [class.badge--default]="!caseData.status">
+        {{ caseData.status || 'Unknown' }}
+    </span>
+  </div>
+
+  
+    <div class="detail-grid">
+    
+      <!-- LEFT COLUMN -->
+      <div class="left-column">
+        
+        <!-- Case Information Card -->
+        <div class="card">
+          <div class="card__header">
+            <h3>Case Information</h3>
+          </div>
+          
+          <div class="card__body">
+            <div class="detail-list">
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Court</span>
+                <span class="detail-item__value">{{ caseData.court?.name }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">District</span>
+                <span class="detail-item__value">{{ caseData.court?.district?.name }}</span>
+              </div>
+              
+              <div class="detail-item" *ngIf="caseData.establishment">
+                <span class="detail-item__label">Establishment</span>
+                <span class="detail-item__value">{{ caseData.establishment.name }}</span>
+              </div>
+              
+              <div class="detail-item" *ngIf="caseData.case_no">
+                <span class="detail-item__label">Case No</span>
+                <span class="detail-item__value">{{ caseData.case_no }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Presiding Judge</span>
+                <span class="detail-item__value">{{ currentJudge }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Court Room / No</span>
+                <span class="detail-item__value">{{ currentCourtRoom }}</span>
+              </div>
+              
+              <div class="detail-item" *ngIf="caseData.received_date">
+                <span class="detail-item__label">Received Date</span>
+                <span class="detail-item__value">{{ caseData.received_date | date:'mediumDate' }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Type</span>
+                <span class="detail-item__value">{{ caseData.case_type }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Act / Section</span>
+                <span class="detail-item__value">{{ caseData.act }} / {{ caseData.section }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Filing No</span>
+                <span class="detail-item__value">{{ caseData.filing_no || '-' }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Filing Date</span>
+                <span class="detail-item__value">{{ caseData.filing_date | date:'mediumDate' }}</span>
+              </div>
+
+              <div class="detail-item">
+                <span class="detail-item__label">Next Date</span>
+                <span class="detail-item__value" 
+                      [class.detail-item__value--highlight]="caseData.next_date">
+                  {{ (caseData.next_date | date:'mediumDate') || '-' }}
+                </span>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+        <!-- Execution Card -->
+        <div class="card card--execution">
+          <div class="card__header">
+            <h3>Execution</h3>
+             <button *ngIf="!caseData.execution?.is_active" 
+                    class="btn btn--sm btn--primary" 
+                    (click)="openExecutionModal(false)">Start</button>
+            <div class="btn-group" *ngIf="caseData.execution">
+                <!-- Stop Button (Only if Active) -->
+                <button *ngIf="caseData.execution.is_active" 
+                        class="btn btn--sm text-danger" 
+                        style="border: 1px solid var(--danger-color); margin-left: 5px; margin-right: 5px;"
+                        (click)="stopExecution()">Stop</button>
+                
+                <!-- Edit Button -->
+                <button class="btn btn--icon-only" (click)="openExecutionModal(true)" title="Edit Details">
+                    <i class="material-icons">edit</i>
+                </button>
+                
+                
+                <!-- Delete Button -->
+                <button class="btn btn--icon-only text-danger" (click)="deleteExecution()" title="Delete Record">
+                    <i class="material-icons">delete</i>
+                </button>
+            </div>
+          </div>
+
+          <div class="card__body">
+            <div *ngIf="caseData.execution; else noExec">
+               <div class="execution-status" [class.execution-status--active]="caseData.execution.is_active">
+                 {{ caseData.execution.is_active ? 'Active' : 'Inactive' }}
+               </div>
+               
+               <div class="detail-list">
+                 <div class="detail-item">
+                    <span class="detail-item__label">Amount</span>
+                    <span class="detail-item__value">{{ caseData.execution.amount | currency:'INR' }}</span>
+                 </div>
+                 <div class="detail-item" *ngIf="caseData.execution.is_active">
+                    <span class="detail-item__label">Next Due</span>
+                    <span class="detail-item__value detail-item__value--highlight">{{ caseData.execution.next_due_date | date:'mediumDate' }}</span>
+                 </div>
+               </div>
+               
+               <button *ngIf="caseData.execution.is_active" class="btn btn--primary" style="width: 100%; margin-top: 15px;" (click)="markExecutionPaid()">
+                 Mark Paid & Renew
+               </button>
+            </div>
+            <ng-template #noExec>
+               <div class="state-message" style="padding: 20px;">
+                 <p class="state-message__text">Not in execution</p>
+               </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    
+      <!-- RIGHT COLUMN -->
+      <div class="right-column">
+      <!-- Parties Card -->
+        <div class="card">
+          <div class="card__header">
+            <h3>Parties Involved</h3>
+          </div>
+          <div class="card__body">
+            
+            <div class="party-group">
+              <div class="party-group__title">Petitioners</div>
+              <div *ngFor="let p of petitioners" class="party-item" (click)="viewParty(p)">
+                <div class="party-item__info">
+                  <span class="party-item__name">{{ p.first_name }} {{ p.last_name }}</span>
+                  <span class="party-item__sub" *ngIf="p.mobile">{{ p.mobile }}</span>
+                </div>
+                <i class="material-icons party-item__icon">visibility</i>
+              </div>
+            </div>
+
+            <div class="party-group" style="margin-top: 15px;">
+              <div class="party-group__title">Respondents</div>
+              <div *ngFor="let p of respondents" class="party-item" (click)="viewParty(p)">
+                <div class="party-item__info">
+                  <span class="party-item__name">{{ p.first_name }} {{ p.last_name }}</span>
+                  <span class="party-item__sub" *ngIf="p.mobile">{{ p.mobile }}</span>
+                </div>
+                <i class="material-icons party-item__icon">visibility</i>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        
+        <!-- DLSA Card (Green Border Variant) -->
+        <div class="card card--dlsa" *ngIf="caseData.dlsa">
+          <div class="card__header">
+            <h3>DLSA Information</h3>
+          </div>
+          
+          <div class="card__body">
+            <div class="detail-list">
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Letter No</span>
+                <span class="detail-item__value">{{ caseData.dlsa.letter_no || '-' }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Registration No</span>
+                <span class="detail-item__value">{{ caseData.dlsa.registration_no || '-' }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Letter Date</span>
+                <span class="detail-item__value">{{ caseData.dlsa.letter_date | date:'mediumDate' }}</span>
+              </div>
+              
+              <div class="detail-item" *ngIf="caseData.dlsa.remarks">
+                <span class="detail-item__label">Remarks</span>
+                <span class="detail-item__value">{{ caseData.dlsa.remarks }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Billed Date</span>
+                <span class="detail-item__value">{{ (caseData.dlsa.billed_on | date:'mediumDate') || 'Not Billed' }}</span>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-item__label">Received Date</span>
+                <span class="detail-item__value">{{ (caseData.dlsa.received_on | date:'mediumDate') || 'Not Received' }}</span>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+        
+        
+      </div>
+    </div>
+<div class="detail-content">
+      <!-- HEARINGS -->
+      <div class="card">
+        <div class="card__header">
+          <h3>Court Hearings</h3>
+          <button class="btn btn--sm" (click)="openHearingModal()">+ Add</button>
+        </div>
+        
+        <div class="card__body" style="padding: 0;"> <!-- Padding 0 for full-width table -->
+          <div class="table-responsive" *ngIf="hearings.length > 0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Purpose</th>
+                  <th>Next Date</th>
+                  <th>Outcome</th>
+                  <th style="width: 80px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let h of hearings">
+                  <td>
+                    <div class="col-date">
+                      <span>{{ h.hearing_date | date:'mediumDate' }}</span>
+                      <small>{{ h.hearing_date | date:'shortTime' }}</small>
+                    </div>
+                  </td>
+                  <td>{{ h.purpose }}</td>
+                  <td>
+                    <span *ngIf="h.next_hearing" class="badge badge--warning">{{ h.next_hearing.hearing_date | date:'mediumDate' }}</span>
+                    <span *ngIf="!h.next_hearing">-</span>
+                  </td>
+                  <td>{{ h.outcome || h.remarks || '-' }}</td>
+                  <td style="text-align: right;">
+                    <button class="btn btn--icon-only" (click)="openHearingModal(h)"><i class="material-icons">edit</i></button>
+                    <button class="btn btn--icon-only text-danger" (click)="deleteHearing(h.id)"><i class="material-icons">delete</i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div *ngIf="hearings.length === 0" class="state-message">
+            <p class="state-message__text">No court hearings recorded yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOGS -->
+      <div class="card">
+        <div class="card__header">
+          <h3>Logs</h3>
+          <button class="btn btn--sm" (click)="openLogModal()">+ Add</button>
+        </div>
+
+        <div class="card__body" style="padding: 0;">
+          <div class="table-responsive" *ngIf="logs.length > 0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;"></th>
+                  <th>Date</th>
+                  <th>Purpose</th>
+                  <th>Remarks</th>
+                  <th>File</th>
+                  <th style="width: 80px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let log of logs">
+                  <td style="text-align: center;">
+                    <button class="log-toggle" 
+                            [class.log-toggle--completed]="!log.is_pending"
+                            (click)="toggleLogStatus(log)">
+                      <i class="material-icons">
+                        {{ log.is_pending ? 'radio_button_unchecked' : 'check_circle' }}
+                      </i>
+                    </button>
+                  </td>
+                  <td>{{ log.log_date | date:'mediumDate' }}</td>
+                  <td>{{ log.purpose }}</td>
+                  <td>
+                     {{ log.remarks || '-' }}
+                  </td>
+                  <td>
+                    <button *ngIf="log.file_path" 
+                            class="btn btn--icon-only" 
+                            (click)="downloadLogFile(log)" 
+                            title="Download Attachment">
+                      <i class="material-icons">download</i>
+                    </button>
+                  </td>
+                  <td style="text-align: right;">
+                    <button class="btn btn--icon-only" (click)="openLogModal(log)"><i class="material-icons">edit</i></button>
+                    <button class="btn btn--icon-only text-danger" (click)="deleteLog(log.id)"><i class="material-icons">delete</i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div *ngIf="logs.length === 0" class="state-message">
+            <p class="state-message__text">No logs scheduled yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remarks -->
+      <div class="card" *ngIf="caseData.remarks">
+        <div class="card__header"><h3>Remarks</h3></div>
+        <div class="card__body">{{ caseData.remarks }}</div>
+      </div>
+
+    </div>
+  </div>
+
+
+<div *ngIf="isLoading" class="state-message">
+  <div class="spinner"></div>
+  <p class="state-message__text">Loading details...</p>
+</div>
+
+<!-- === MODALS (Reusing global styles) === -->
+<!-- VIEW PARTY MODAL -->
+<div class="modal-overlay" *ngIf="showPartyViewModal" (click)="showPartyViewModal = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="modal-card__header">
+      <h3>Party Details</h3>
+      <button class="btn btn--icon-only" (click)="showPartyViewModal = false">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+
+    <div class="modal-card__body" *ngIf="selectedPartyForView">
+      
+      <div class="detail-list">
+        
+        <!-- Full Name -->
+        <div class="detail-item">
+          <span class="detail-item__label">Full Name</span>
+          <span class="detail-item__value">
+            {{ selectedPartyForView.first_name }} 
+            {{ selectedPartyForView.middle_name }} 
+            {{ selectedPartyForView.last_name }}
+          </span>
+        </div>
+
+        <!-- Father's Name -->
+        <div class="detail-item" *ngIf="selectedPartyForView.father_name">
+          <span class="detail-item__label">Father's Name</span>
+          <span class="detail-item__value">{{ selectedPartyForView.father_name }}</span>
+        </div>
+
+        <!-- Mother's Name -->
+        <div class="detail-item" *ngIf="selectedPartyForView.mother_name">
+          <span class="detail-item__label">Mother's Name</span>
+          <span class="detail-item__value">{{ selectedPartyForView.mother_name }}</span>
+        </div>
+
+        <!-- Guardian -->
+        <div class="detail-item" *ngIf="selectedPartyForView.guardian">
+          <span class="detail-item__label">Guardian</span>
+          <span class="detail-item__value">
+            {{ selectedPartyForView.guardian }} 
+            <span style="color: #777; font-size: 0.9em;">({{ selectedPartyForView.guardian_relation }})</span>
+          </span>
+        </div>
+
+        <!-- Mobile -->
+        <div class="detail-item">
+          <span class="detail-item__label">Mobile</span>
+          <span class="detail-item__value">
+            {{ selectedPartyForView.mobile }}
+            <span *ngIf="selectedPartyForView.mobile2">, {{ selectedPartyForView.mobile2 }}</span>
+          </span>
+        </div>
+
+        <!-- Email -->
+        <div class="detail-item" *ngIf="selectedPartyForView.email">
+          <span class="detail-item__label">Email</span>
+          <span class="detail-item__value">{{ selectedPartyForView.email }}</span>
+        </div>
+
+        <!-- Address (Spans full width if needed, or fits grid) -->
+        <div class="detail-item detail-item--full" *ngIf="selectedPartyForView.address_line_1">
+          <span class="detail-item__label">Address</span>
+          <span class="detail-item__value" style="line-height: 1.5;">
+            {{ selectedPartyForView.address_line_1 }}
+            <ng-container *ngIf="selectedPartyForView.address_line_2">, <br>{{ selectedPartyForView.address_line_2 }}</ng-container>
+            <br>
+            {{ selectedPartyForView.city }}, {{ selectedPartyForView.state }} - {{ selectedPartyForView.pincode }}
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Optional Footer -->
+    <div class="modal-card__footer">
+      <button class="btn btn--primary" (click)="showPartyViewModal = false">Close</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- === 1. HEARING MODAL === -->
+<div class="modal-overlay" *ngIf="showHearingModal" (click)="showHearingModal = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="modal-card__header">
+      <h3>{{ editingHearingId ? 'Edit' : 'Record' }} Hearing</h3>
+      <button class="btn btn--icon-only" (click)="showHearingModal = false">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+    
+    <form [formGroup]="hearingFormGroup" (ngSubmit)="saveHearing()">
+      <div class="modal-card__body">
+        
+        <!-- Date & Room Row -->
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label>Hearing Date <span class="text-danger">*</span></label>
+            <input type="datetime-local" formControlName="hearing_date">
+          </div>
+          <div class="form-group">
+            <label>Court Room</label>
+            <input type="text" formControlName="court_room" placeholder="e.g. 4B">
+          </div>
+        </div>
+      
+        <!-- Judge Selection -->
+        <div class="form-group">
+          
+          <!-- Header with Toggle -->
+          <div class="judge-select-header">
+            <label>Presiding Judge</label>
+            <button type="button" class="btn-toggle-add" (click)="showAddJudgeUI = !showAddJudgeUI">
+              {{ showAddJudgeUI ? 'Cancel Adding' : '+ Add New Judge' }}
+            </button>
+          </div>
+          
+          <!-- Inline Add Row -->
+          <div class="add-judge-row" *ngIf="showAddJudgeUI">
+            <input type="text" 
+                   [(ngModel)]="newJudgeName" 
+                   [ngModelOptions]="{standalone: true}" 
+                   placeholder="Enter Judge Name"
+                   (keyup.enter)="addNewJudge()"> <!-- Added Enter key support -->
+            <button type="button" class="btn btn--primary btn--sm" (click)="addNewJudge()">
+              Add
+            </button>
+          </div>
+
+          <ng-select 
+              [items]="judges" 
+              bindLabel="name" 
+              bindValue="id" 
+              placeholder="Select Judge"
+              formControlName="judge_id">
+          </ng-select>
+        </div>
+
+        <!-- Purpose -->
+        <div class="form-group">
+          <label>Purpose <span class="text-danger">*</span></label>
+          <ng-select 
+              [items]="purposeOptions" 
+              placeholder="Select or Type Purpose"
+              [addTag]="true" 
+              formControlName="purpose">
+          </ng-select>
+          <div *ngIf="hearingFormGroup.get('purpose')?.invalid && hearingFormGroup.get('purpose')?.touched" class="text-danger text-xs">
+            Purpose is required
+          </div>
+        </div>
+        
+        <!-- Outcome -->
+        <div class="form-group">
+          <label>Outcome / Business</label>
+          <input type="text" formControlName="outcome" placeholder="e.g. Adjourned, Evidence Recorded">
+        </div>
+
+        <!-- Next Date -->
+        <div class="form-group">
+          <label>Remarks</label>
+          <textarea formControlName="remarks" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-card__footer">
+  <!-- Use btn--text instead of inline styles -->
+        <button type="button" class="btn btn--text" (click)="showHearingModal = false">Cancel</button>
+        <button type="submit" class="btn btn--primary" [disabled]="hearingFormGroup.invalid">Save Hearing</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- === 2. EXECUTION MODAL === -->
+<div class="modal-overlay" *ngIf="showExecutionModal" (click)="closeExecutionModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="modal-card__header">
+      <!-- Dynamic Title -->
+      <h3>{{ isExecutionEditMode ? 'Edit' : 'Start' }} Execution</h3>
+      <button class="btn btn--icon-only" (click)="closeExecutionModal()">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+    
+    <!-- Updated ngSubmit to saveExecution() -->
+    <form [formGroup]="executionFormGroup" (ngSubmit)="saveExecution()">
+      <div class="modal-card__body">
+        
+        <div class="form-group">
+          <label>Decree Amount (₹) <span class="text-danger">*</span></label>
+          <input type="number" formControlName="amount" placeholder="Enter amount">
+        </div>
+
+        <div class="form-group">
+          <label>Start Date <span class="text-danger">*</span></label>
+          <input type="date" formControlName="start_date">
+        </div>
+        
+        <div class="form-group">
+          <label>Next Due Date <span class="text-danger">*</span></label>
+          <input type="date" formControlName="next_due_date">
+        </div>
+
+        <div class="form-group">
+          <label>Remarks</label>
+          <textarea formControlName="remarks" rows="3" placeholder="Enter details..."></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-card__footer">
+        <button type="button" class="btn btn--text" (click)="closeExecutionModal()">Cancel</button>
+        
+        <!-- Dynamic Button Text -->
+        <button type="submit" class="btn btn--primary" [disabled]="executionFormGroup.invalid">
+            {{ isExecutionEditMode ? 'Update' : 'Start Process' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- === 3. LOG MODAL === -->
+<div class="modal-overlay" *ngIf="showLogModal" (click)="showLogModal = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="modal-card__header">
+      <h3>{{ editingLogId ? 'Edit' : 'Add' }} Case Log</h3>
+      <button class="btn btn--icon-only" (click)="showLogModal = false">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+    
+    <form [formGroup]="logFormGroup" (ngSubmit)="saveLog()">
+      <div class="modal-card__body">
+        
+        <div class="form-group">
+          <label>Date & Time <span class="text-danger">*</span></label>
+          <input type="datetime-local" formControlName="log_date">
+          <small class="error-text" *ngIf="logFormGroup.get('log_date')?.invalid && logFormGroup.get('log_date')?.touched">
+            Date is required
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Purpose / Action</label>
+          <ng-select 
+              [items]="purposeOptions" 
+              placeholder="Select or Type Purpose"
+              [addTag]="true" 
+              formControlName="purpose">
+          </ng-select>
+          <div *ngIf="hearingFormGroup.get('purpose')?.invalid && hearingFormGroup.get('purpose')?.touched" class="text-danger text-xs">
+            Purpose is required
+          </div>
+        </div>
+        
+        <!-- Pending Task Toggle -->
+        <div class="form-group" style="background: var(--bg-color); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px;">
+          <input type="checkbox" formControlName="is_pending" id="pendingCheck" 
+                 style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-color);">
+          <label for="pendingCheck" style="margin: 0; cursor: pointer; font-weight: 500;">Mark as Pending Task</label>
+        </div>
+
+        <div class="form-group">
+          <label>Attach File (Optional)</label>
+          
+          <!-- Removed style="background: white..." -->
+          <input 
+            type="file" 
+            (change)="onFileSelected($event)">
+        </div>
+
+        <div class="form-group">
+          <label>Remarks</label>
+          <textarea formControlName="remarks" rows="3" placeholder="Enter details..."></textarea>
+        </div>
+
+      </div>
+
+      <div class="modal-card__footer">
+        <button type="button" class="btn btn--text" (click)="showLogModal = false">Cancel</button>
+        <button type="submit" class="btn btn--primary" [disabled]="logFormGroup.invalid">Save Log</button>
+      </div>
+    </form>
+  </div>
+</div>

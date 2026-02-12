@@ -1,0 +1,52 @@
+/* src/app/features/admin/settings-manager/settings-manager.component.scss */
+
+// Import Shared Styles
+@use 'ui-components' as ui;
+@use 'modal'; 
+
+.manager-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+// --- Page Specific: Code Editor ---
+// This overrides the default textarea style from _modal.scss
+.code-editor {
+  font-family: 'Fira Code', 'Consolas', 'Monaco', monospace; // Better font stack
+  font-size: 0.9rem;
+  background-color: #1e1e1e; // VS Code-like dark background
+  color: #d4d4d4; // Light gray text
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 15px;
+  width: 100%;
+  resize: vertical;
+  line-height: 1.5;
+  min-height: 200px;
+  transition: border-color 0.2s;
+  
+  // Ensure it looks good even in light theme (code is usually easier to read in dark)
+  &::placeholder {
+    color: #6a9955; // Comment-like color for placeholder
+    font-style: italic;
+  }
+
+  &:focus {
+    border-color: var(--accent-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.2);
+  }
+
+  // Error state override
+  &.ng-invalid.ng-touched {
+    border-color: var(--danger-color);
+  }
+}
+
+// Simple helper for the monospace key column
+.font-mono {
+  font-family: 'Consolas', monospace;
+  font-weight: 600;
+  color: var(--accent-color);
+}

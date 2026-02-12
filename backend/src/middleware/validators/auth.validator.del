@@ -1,0 +1,20 @@
+import { body } from 'express-validator';
+
+export const loginValidator = [
+  // Email: Must exist, be an email, and we trim whitespace/normalize it
+  body('email')
+    .trim()
+    .notEmpty().withMessage('Email is required')
+    .isEmail().withMessage('Invalid email format')
+    .normalizeEmail(), // Converts 'User@Example.com' to 'user@example.com'
+
+  // Password: Must exist. We generally don't trim passwords (spaces might be valid)
+  body('password')
+    .notEmpty().withMessage('Password is required'),
+    
+  // RememberMe: Optional, but if present must be boolean
+  body('rememberMe')
+    .optional()
+    .isBoolean()
+];
+

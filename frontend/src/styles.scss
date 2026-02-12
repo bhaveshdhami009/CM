@@ -1,0 +1,251 @@
+/* src/styles.scss */
+@import "@ng-select/ng-select/themes/default.theme.css";
+
+/* ... existing imports / :root ... */
+
+/* 1. CSS VARIABLES (Merged) */
+:root {
+  /* Layout Dimensions */
+  --sidebar-width: 250px;
+  --sidebar-collapsed-width: 70px;
+  --header-height: 60px;
+  
+  /* Light Theme Palette */
+  --bg-color: #f4f6f9;           /* Page Background */
+  --primary-color: #ffffff;      /* Card/Surface Background */
+  --text-color: #2c3e50;         /* Main Text */
+  --text-secondary: #6c757d;     /* Subtitles/Labels */
+  --border-color: #e0e0e0;       /* Borders */
+  --accent-color: #007bff;       /* Buttons/Links (JS updates this) */
+  --accent-color-rgb: 0, 123, 255; 
+  
+  /* Utility Colors */
+  --danger-color: #dc3545;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  
+  --status-pending-bg: #fff3cd;      /* Light Yellow */
+  --status-pending-text: #856404;    /* Dark Yellow */
+  --status-done-bg: #d4edda;        /* Light Green */
+  --status-done-text: #155724;      /* Dark Green */
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 2. Dark Mode Overrides */
+body.dark-theme {
+  --bg-color: #151521;           /* Darker Background */
+  --primary-color: #1e1e2d;      /* Dark Surface */
+  --text-color: #e0e0e0;         /* Light Text */
+  --text-secondary: #a0a0a0;
+  --border-color: #2b2b40;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
+  
+  --status-pending-bg: rgba(255, 193, 7, 0.15);  /* Transparent Bright Yellow */
+  --status-pending-text: #ffc107;               /* Bright Yellow */
+  --status-done-bg: rgba(40, 167, 69, 0.15);   /* Transparent Bright Green */
+  --status-done-text: #28a745;                 /* Bright Green */
+}
+
+/* 3. Global Reset & Base Styles */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  /* Apply variables to body */
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  
+  /* Smooth transition for theme switching */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 4. Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 5. Defaults */
+a {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* 6. Utility Classes */
+.w-full { width: 100%; }
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* NG-SELECT THEME OVERRIDES */
+/* --- 1. Styles for the main input component --- */
+.ng-select {
+  padding-bottom: 0px;
+
+  .ng-select-container {
+    background-color: var(--bg-color) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+    border-radius: 8px !important;
+    min-height: 42px;
+    align-items: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  /* Focused State */
+  &.ng-select-focused .ng-select-container {
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.15) !important;
+  }
+
+  /* Text Colors */
+  .ng-value-label {
+    color: var(--text-color) !important;
+    font-weight: 500;
+  }
+
+  .ng-input > input {
+    color: var(--text-color) !important;
+  }
+  
+  .ng-placeholder {
+    color: var(--text-secondary) !important;
+  }
+
+  /* Clear & Arrow Icons */
+  .ng-clear-wrapper {
+    color: var(--text-secondary);
+    &:hover { color: var(--danger-color); }
+  }
+  
+  .ng-arrow-wrapper .ng-arrow {
+    border-color: var(--text-secondary) transparent transparent;
+  }
+}
+
+
+/* --- 2. Styles for the Dropdown Panel (Must be GLOBAL) --- */
+/* Because of appendTo='body', this class is no longer a child of .ng-select */
+.ng-dropdown-panel {
+  background-color: var(--primary-color) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  margin-top: 4px;
+  
+  .ng-dropdown-panel-items {
+    .ng-option {
+      background-color: var(--primary-color) !important;
+      color: var(--text-color) !important;
+      padding: 10px 12px !important;
+      border-bottom: 1px solid var(--border-color);
+      
+      &:last-child { border-bottom: none; }
+
+      /* Hover / Marked State */
+      &:hover, &.ng-option-marked {
+        background-color: rgba(var(--accent-color-rgb), 0.08) !important;
+        color: var(--accent-color) !important;
+      }
+      
+      /* Selected State */
+      &.ng-option-selected {
+        background-color: var(--bg-color) !important;
+        font-weight: 700;
+        color: var(--text-color) !important;
+      }
+    }
+  }
+}
+
+
+/* 
+   THEME TRANSITION UTILITY
+   Forces all elements to transition colors smoothly together.
+   Activated by ThemeService for 300ms during toggle.
+*/
+body.theme-transitioning {
+  &, * {
+    transition: background-color 0.3s ease-in-out,
+                color 0.3s ease-in-out,
+                border-color 0.3s ease-in-out,
+                box-shadow 0.3s ease-in-out,
+                fill 0.3s ease-in-out,
+                stroke 0.3s ease-in-out !important;
+  }
+}
+
+/* Global Autofill Override */
+
+/* 1. Target all autofill states */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  
+  /* 
+     BACKGROUND: 
+     Use a large inset shadow to cover the native yellow.
+     We use 10% mix (subtler) so it doesn't look too heavy.
+  */
+  -webkit-box-shadow: 0 0 0 1000px color-mix(in srgb, var(--accent-color) 10%, var(--bg-color)) inset !important;
+  
+  /* 
+     TEXT: 
+     Force the text color to match your theme.
+  */
+  -webkit-text-fill-color: var(--text-color) !important;
+  
+  /* 
+     CURSOR: 
+     Ensure the blinking cursor is visible and matches text.
+  */
+  caret-color: var(--text-color) !important;
+
+  /* 
+     *** THE POLISH FIXES *** 
+     Browsers reset borders on autofill. We must force them back.
+  */
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important; /* Ensure this matches your global input radius */
+  background-clip: padding-box !important; /* Ensures background doesn't bleed under border */
+  
+  /* 
+     TRANSITION:
+     This is a hack to delay the native background color switch, 
+     giving our box-shadow time to render first.
+  */
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* 2. Handle the FOCUS state specifically */
+/* When an autofilled input is clicked, we want the accent border */
+input:-webkit-autofill:focus {
+  border-color: var(--accent-color) !important;
+  
+  /* Optional: Add your focus ring/shadow if you use one */
+  box-shadow: 
+    0 0 0 1000px color-mix(in srgb, var(--accent-color) 10%, var(--bg-color)) inset,
+    0 0 0 3px rgba(var(--accent-color-rgb), 0.15) !important; 
+}

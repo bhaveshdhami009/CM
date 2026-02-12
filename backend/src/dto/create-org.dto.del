@@ -1,0 +1,12 @@
+export interface CreateOrgDto {
+  // Org Details
+  name: string;
+  address?: string;
+  contact_email?: string;
+  phone?: string;
+
+  // Initial Admin User Details
+  admin_email: string;
+  admin_name: string;
+  admin_password?: string; // Optional, can default
+}

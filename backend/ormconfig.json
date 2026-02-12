@@ -1,0 +1,13 @@
+{
+  "type": "postgres",
+  "host": "localhost",
+  "port": 5432,
+  "username": "legal_case_user",
+  "password": "your_strong_password",
+  "database": "legal_case_db",
+  "synchronize": true,
+  "logging": true,
+  "entities": [
+    "src/entities/**/*.ts"
+  ]
+}

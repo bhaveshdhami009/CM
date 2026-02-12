@@ -1,0 +1,90 @@
+/* src/app/features/admin/db-viewer/db-viewer.component.scss */
+
+@use 'ui-components' as ui;
+
+.viewer-container {
+  max-width: 1400px; // Wide container for raw data tables
+  margin: 0 auto;
+  padding: 20px;
+}
+
+// --- Header Layout ---
+.viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%; // Ensure header takes full width of card
+  
+  &__titles {
+    h1 {
+      margin: 0 0 5px 0;
+      font-size: 1.5rem;
+      color: var(--text-color);
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// --- Select Dropdown Styling ---
+.select-wrapper {
+  position: relative;
+  min-width: 250px;
+
+  select {
+    width: 100%;
+    appearance: none; // Hides default arrow
+    padding: 10px 40px 10px 15px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.1);
+    }
+  }
+
+  &__icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none; // Click passes through to select
+  }
+}
+
+// --- Table Meta Info ---
+.table-meta {
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  font-weight: 600;
+  text-align: right;
+  border-bottom: 1px solid var(--border-color);
+  background-color: rgba(var(--accent-color-rgb), 0.05);
+}
+
+// Data Cell specific tweak for raw data
+.raw-data-cell {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block; // Needed for ellipsis to work on span sometimes
+}
+
+// Animation
+.fade-in { animation: fadeIn 0.3s ease-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

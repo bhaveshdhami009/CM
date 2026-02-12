@@ -1,0 +1,22 @@
+import { DataSource } from 'typeorm';
+import { CaseType } from '../../entities/CaseType.js';
+
+export const seedCaseTypes = async (dataSource: DataSource) => {
+  const repo = dataSource.getRepository(CaseType);
+
+  const types = [
+    { name: 'Private' },
+    { name: 'DLSA' },
+    { name: 'Execution' },
+    { name: 'File Inspection' },
+  ];
+
+  for (const type of types) {
+    // Check if exists to avoid duplicates if run multiple times
+    const exists = await repo.findOne({ where: { name: type.name } });
+    if (!exists) {
+      await repo.save(type);
+    }
+  }
+  console.log('✅ Case Types seeded');
+};

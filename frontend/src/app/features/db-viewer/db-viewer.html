@@ -1,0 +1,89 @@
+<div class="viewer-container fade-in">
+  
+  <div class="card">
+    
+    <!-- Header -->
+    <div class="card__header">
+      <div class="viewer-header">
+        
+        <div class="viewer-header__titles">
+          <h1>Database Viewer</h1>
+          <p class="subtitle">Direct access to raw table data for debugging.</p>
+        </div>
+        
+        <!-- Custom Select Control -->
+        <div class="select-wrapper">
+          <select id="table-select" (change)="onTableSelect($event)">
+            <option value="">-- Select a Table --</option>
+            <option *ngFor="let table of tableNames" [value]="table">{{ table }}</option>
+          </select>
+          <i class="material-icons select-wrapper__icon">arrow_drop_down</i>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="card__body" style="padding: 0;"> <!-- Padding 0 for edge-to-edge table -->
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="state-message">
+        <div class="spinner"></div>
+        <p class="state-message__text">Fetching records for {{ selectedTable }}...</p>
+      </div>
+
+      <!-- Data Table -->
+      <div *ngIf="!isLoading && tableData.length > 0">
+        
+        <div class="table-meta">
+          Showing {{ tableData.length }} records
+        </div>
+        
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th *ngFor="let header of tableHeaders">{{ header }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of tableData">
+                <td *ngFor="let header of tableHeaders">
+                  
+                  <span class="raw-data-cell" [title]="row[header]">
+                    
+                    <!-- USE THE NEW FUNCTION HERE -->
+                    <ng-container *ngIf="isDateColumn(header); else normalVal">
+                      {{ row[header] | date:'medium' }}
+                    </ng-container>
+                    
+                    <ng-template #normalVal>
+                      {{ row[header] }}
+                    </ng-template>
+                    
+                  </span>
+
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Empty States -->
+      
+      <!-- Case 1: Table Selected but no data -->
+      <div *ngIf="!isLoading && selectedTable && tableData.length === 0" class="state-message">
+        <i class="material-icons state-message__icon">inbox</i>
+        <p class="state-message__text">Table '{{ selectedTable }}' is empty.</p>
+      </div>
+
+      <!-- Case 2: No Table Selected -->
+      <div *ngIf="!isLoading && !selectedTable" class="state-message">
+        <i class="material-icons state-message__icon">storage</i>
+        <p class="state-message__text">Please select a table to view its contents.</p>
+      </div>
+
+    </div>
+  </div>
+</div>

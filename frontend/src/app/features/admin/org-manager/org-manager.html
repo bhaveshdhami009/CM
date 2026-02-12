@@ -1,0 +1,175 @@
+<div class="org-container fade-in">
+  
+  <div class="card">
+    
+    <div class="card__header">
+      <div class="title-group">
+        <h2>Organization Manager</h2>
+        <p class="subtitle">Onboard new law firms and manage tenants.</p>
+      </div>
+      
+      <button class="btn btn--primary" (click)="openCreateModal()">
+        <i class="material-icons">domain_add</i> New Organization
+      </button>
+    </div>
+
+    <div class="card__body" style="padding: 0;">
+      
+      <div class="table-responsive" *ngIf="!isLoading">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Firm Name</th>
+              <th>Contact</th>
+              <th>Users</th>
+              <th>Address</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+            
+            <!-- FILTER ROW -->
+            <tr class="filter-row">
+              <th></th> <!-- ID -->
+              
+              <th>
+                <input type="text" [(ngModel)]="filterValues.name" (keyup)="onFilterChange()" placeholder="Filter Name...">
+              </th>
+              
+              <th>
+                <!-- Wrapper for stacked inputs -->
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                  <input type="text" [(ngModel)]="filterValues.contact_email" (keyup)="onFilterChange()" placeholder="Email...">
+                  <input type="text" [(ngModel)]="filterValues.phone" (keyup)="onFilterChange()" placeholder="Phone...">
+                </div>
+              </th>
+              
+              <th></th> <!-- Users -->
+              
+              <th>
+                 <input type="text" [(ngModel)]="filterValues.address" (keyup)="onFilterChange()" placeholder="Filter Address...">
+              </th>
+              
+              <th></th> <!-- Actions -->
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let org of orgs">
+              <td>#{{ org.id }}</td>
+              
+              <td>
+                <div class="cell-stack">
+                  <span class="cell-stack__primary">{{ org.name }}</span>
+                </div>
+              </td>
+              
+              <td>
+                <div class="cell-stack">
+                  <span class="cell-stack__primary">{{ org.contact_email }}</span>
+                  <span class="cell-stack__secondary">{{ org.phone || '-' }}</span>
+                </div>
+              </td>
+              
+              <td>
+                <span class="badge badge--default">{{ org.users?.length || 0 }} Members</span>
+              </td>
+              
+              <td>{{ org.address || '-' }}</td>
+              
+              <td style="text-align: right;">
+                <button class="btn btn--icon-only" (click)="openEditModal(org)" title="Edit Firm">
+                  <i class="material-icons">edit</i>
+                </button>
+                <button class="btn btn--icon-only text-danger" (click)="deleteOrg(org)" title="Delete Firm">
+                  <i class="material-icons">delete_outline</i>
+                </button>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Using standard state-message class for consistency -->
+      <div *ngIf="isLoading" class="state-message">
+        <div class="spinner"></div>
+        <p class="state-message__text">Loading organizations...</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="modal-card__header">
+      <h3>{{ isEditMode ? 'Edit Firm Details' : 'Onboard New Firm' }}</h3>
+      <button class="btn btn--icon-only" (click)="showModal = false"><i class="material-icons">close</i></button>
+    </div>
+    
+    <form [formGroup]="orgForm" (ngSubmit)="saveOrg()">
+      <div class="modal-card__body scrollable">
+        
+        <div class="section-title">Firm Details</div>
+        
+        <div class="form-group">
+          <label>Organization Name <span class="text-danger">*</span></label>
+          <input formControlName="name" placeholder="e.g. Smith & Associates">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Contact Email</label>
+            <input formControlName="contact_email">
+            <small class="error-text" *ngIf="orgForm.get('contact_email')?.invalid && orgForm.get('contact_email')?.touched ">Invalid Format</small>
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input formControlName="phone" maxlength="10">
+            <small class="error-text" *ngIf="orgForm.get('phone')?.hasError('pattern')">
+              Must be 10 digits
+            </small>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Address</label>
+          <input formControlName="address">
+        </div>
+
+        <ng-container *ngIf="!isEditMode">
+          <div class="divider"></div>
+          <div class="section-title">Initial Administrator</div>
+          
+          <div class="form-group">
+            <label>Admin Name <span class="text-danger">*</span></label>
+            <input formControlName="admin_name" placeholder="e.g. John Smith">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Admin Email (Login) <span class="text-danger">*</span></label>
+              <input formControlName="admin_email" placeholder="john@smithlaw.com">
+              <small class="error-text" *ngIf="orgForm.get('admin_email')?.invalid && orgForm.get('admin_email')?.touched">
+                Valid email is required
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" formControlName="admin_password" placeholder="Default: LegalApp@123">
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+
+      <div class="modal-card__footer">
+        <button type="button" class="btn btn--text" (click)="showModal = false">Cancel</button>
+        <button type="submit" class="btn btn--primary" [disabled]="orgForm.invalid">
+          {{ isEditMode ? 'Update' : 'Onboard Firm' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+export type Operator = 'equals' | 'contains' | 'gt' | 'lt' | 'startsWith';
+
+export interface FilterCondition {
+  field: string;
+  operator: Operator;
+  value: any;
+}
+
+export interface AdvancedSearchDto {
+  entityType: 'cases' | 'hearings' | 'logs' | 'executions' | 'dlsa';
+  filters: FilterCondition[]; // List of conditions
+  logic: 'AND' | 'OR';        // How to combine them
+  page?: number;
+  limit?: number;
+}

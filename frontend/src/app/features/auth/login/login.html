@@ -1,0 +1,110 @@
+<div class="auth-wrapper fade-in">
+  <div class="auth-card">
+    
+    <!-- 1. HEADER (Updated to match Sidebar Brand) -->
+    <div class="auth-card__header auth-header">
+      <div class="auth-header__logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v17" />
+          <path d="M6 6h12" /> 
+          <path d="M6 6l-3 5" />
+          <path d="M6 6l3 5" />
+          <path d="M3 11c0 1.66 1.34 3 3 3s3-1.34 3-3" />
+          <path d="M18 6l-3 5" />
+          <path d="M18 6l3 5" />
+          <path d="M15 11c0 1.66 1.34 3 3 3s3-1.34 3-3" />
+        </svg>
+      </div>
+      <h1 class="auth-header__title">Welcome Back</h1>
+      <p class="auth-header__subtitle">Sign in to manage your cases</p>
+    </div>
+
+    <!-- 2. GLOBAL API ERROR -->
+    <div *ngIf="errorMessage" class="alert alert--error">
+      <i class="material-icons">error_outline</i>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <form #loginForm="ngForm" (ngSubmit)="loginForm.form.valid && onSubmit()" class="auth-form">
+      
+      <!-- EMAIL INPUT -->
+      <div class="auth-form__group">
+        <label for="email" class="auth-form__label">Email Address</label>
+        
+        <div class="input-group">
+          <!-- Input comes FIRST for CSS focus selector to work -->
+          <input 
+            type="email" 
+            id="email" 
+            class="input-group__field"
+            name="email" 
+            [(ngModel)]="credentials.email" 
+            #email="ngModel"
+            placeholder="name@company.com" 
+            required 
+            email 
+            [disabled]="isLoading">
+            
+          <!-- Icon comes SECOND -->
+          <i class="material-icons input-group__icon">email</i>
+        </div>
+
+        <!-- Validation Message -->
+        <small class="text-danger" style="margin-top: 5px; display: block; font-size: 0.85rem;" 
+               *ngIf="email.invalid && (email.dirty || email.touched)">
+          <span *ngIf="email.errors?.['required']">Email is required.</span>
+          <span *ngIf="email.errors?.['email']">Please enter a valid email address.</span>
+        </small>
+      </div>
+
+      <!-- PASSWORD INPUT -->
+      <div class="auth-form__group">
+        <label for="password" class="auth-form__label">Password</label>
+        
+        <div class="input-group">
+          <input 
+            type="password" 
+            id="password" 
+            class="input-group__field"
+            name="password" 
+            [(ngModel)]="credentials.password"
+            #password="ngModel"
+            placeholder="Enter your password" 
+            required
+            minlength="3"
+            [disabled]="isLoading">
+            
+          <i class="material-icons input-group__icon">lock</i>
+        </div>
+
+        <!-- Validation Message -->
+        <small class="text-danger" style="margin-top: 5px; display: block; font-size: 0.85rem;" 
+               *ngIf="password.invalid && (password.dirty || password.touched)">
+          Password is required (min 6 chars).
+        </small>
+      </div>
+
+      <!-- 3. ACTIONS (Checkbox) -->
+      <div class="auth-form__actions">
+        <!-- Uses global .checkbox class (removed .checkmark span) -->
+        <label class="checkbox">
+          <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" [disabled]="isLoading">
+          Remember me
+        </label>
+      </div>
+
+      <!-- 4. SUBMIT BUTTON -->
+      <button type="submit" class="btn-submit" [disabled]="loginForm.invalid || isLoading">
+        <span *ngIf="!isLoading">Sign In</span>
+        <div *ngIf="isLoading" class="spinner-sm"></div>
+      </button>
+
+    </form>
+
+    <!-- Footer Link -->
+    <div class="auth-footer">
+      Don't have an account? <a routerLink="/register">Register here</a>
+    </div>
+
+  </div>
+</div>

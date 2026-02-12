@@ -1,0 +1,168 @@
+/* src/app/layout/main-layout/_main-layout.sidebar.scss */
+
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--primary-color);
+  border-right: 1px solid var(--border-color);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+
+  &__logo-area {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    height: var(--header-height);
+    padding: 0 20px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  &__logo-icon {
+    margin-right: 10px;
+  }
+
+  &__nav-menu {
+    padding: 20px 0;
+    overflow-y: auto;
+    flex: 1;
+  }
+  
+  &__footer {
+    border-top: 1px solid var(--border-color);
+    padding: 10px 0;
+    flex-shrink: 0;
+  }
+}
+
+.nav-group {
+  margin-bottom: 5px;
+
+  &__label {
+    padding: 15px 20px 5px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: var(--text-color);
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  cursor: pointer;
+  border-right: 3px solid transparent; // Reserve space for the active border
+
+  &__icon {
+    margin-right: 15px;
+    width: 24px;
+    text-align: center;
+  }
+
+  &:hover {
+    background-color: rgba(var(--accent-color-rgb), 0.05);
+  }
+
+  &--active {
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+    color: var(--accent-color);
+    border-right-color: var(--accent-color);
+  }
+
+  &--child {
+    padding-left: 35px;
+    font-size: 0.9rem;
+    
+    .nav-item__icon {
+      font-size: 18px;
+      margin-right: 12px;
+    }
+  }
+
+  &--logout {
+    &:hover {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: var(--danger-color);
+    }
+  }
+}
+
+/* --- Parent Item with Children --- */
+.nav-item-with-children {
+  
+  // Container for the sub-links
+  .children-list {
+    // Subtle background to visually group the children
+    background-color: rgba(0,0,0,0.02);
+    padding-top: 5px;
+    padding-bottom: 5px;
+
+    // In dark mode, use a subtle white tint instead
+    .dark-theme & {
+      background-color: rgba(255,255,255,0.03);
+    }
+  }
+
+  /*
+   * When a child link is active (`.nav-item--child.nav-item--active`), 
+   * we also want the parent to be highlighted.
+   * `routerLinkActive` on the parent with `exact: false` handles this.
+  */
+  .parent.nav-item--active {
+    // Make the parent look visually "open" or "selected"
+    font-weight: 700;
+    color: var(--accent-color);
+    background-color: rgba(var(--accent-color-rgb), 0.05);
+  }
+}
+
+
+/* --- Child Item Styling --- */
+// Update the existing child style for better visuals
+.nav-item--child {
+  padding-left: 50px; // Deeper indent to show hierarchy
+  font-size: 0.9rem;
+  
+  // Use a slightly smaller vertical padding for a denser list
+  padding-top: 10px;
+  padding-bottom: 10px;
+
+  .nav-item__icon {
+    font-size: 18px;
+    margin-right: 12px;
+  }
+  
+  // When a child is active, make it bolder
+  &.nav-item--active {
+    font-weight: 700;
+    // The background/border color is already handled by the base .nav-item--active class
+  }
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 992px) {
+  .sidebar {
+    position: fixed;
+    z-index: 999;
+    transform: translateX(-100%); // Hidden by default
+    transition: transform 0.3s ease-in-out;
+
+    // Show when the open class is applied by the component logic
+    &--mobile-open {
+      transform: translateX(0);
+      box-shadow: 0 0 25px rgba(0,0,0,0.2);
+    }
+  }
+}

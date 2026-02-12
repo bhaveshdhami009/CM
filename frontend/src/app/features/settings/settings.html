@@ -1,0 +1,134 @@
+<div class="settings-container fade-in">
+  <h1>Settings</h1>
+
+  <!-- APPEARANCE CARD -->
+  <div class="card">
+    <div class="card__header">
+      <h3>Appearance</h3>
+    </div>
+    
+    <div class="card__body">
+      
+      <!-- Theme Mode -->
+      <div class="setting-group">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="margin: 0;">Dark Mode</label>
+        
+          <label class="toggle-switch">
+          <!-- 
+             Note: We use [checked] to read signal, 
+             and (change) to trigger the toggle 
+          -->
+            <input type="checkbox" 
+                   [checked]="themeService.darkMode()" 
+                   (change)="toggleTheme()">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Accent Color -->
+      <div class="setting-group">
+        <label>Accent Color</label>
+        <div class="color-picker">
+          <!-- Preset Colors -->
+          <div 
+            *ngFor="let color of colors" 
+            class="color-picker__swatch" 
+            [style.background-color]="color"
+            [class.active]="color === customColor"
+            (click)="selectColor(color)">
+          </div>
+          
+          <!-- Custom Input -->
+          <input type="color" class="color-picker__input" [(ngModel)]="customColor" (change)="saveAppearance()">
+        </div>
+      </div>
+
+    </div>
+  </div>
+  
+
+  <!-- SECURITY CARD -->
+  <div class="card">
+    <div class="card__header">
+      <h3>Security</h3>
+    </div>
+
+    <div class="card__body">
+
+      <!-- Change Password -->
+      <div class="security-section">
+        <h4>Change Password</h4>
+        
+        <!-- Reusing Form Row from _forms.scss -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" [(ngModel)]="passForm.oldPassword" placeholder="••••••">
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" [(ngModel)]="passForm.newPassword" placeholder="••••••">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox">
+            <input type="checkbox" [(ngModel)]="passForm.logoutOthers">
+            Log out all other devices
+          </label>
+        </div>
+        
+        <button class="btn btn--primary" (click)="changePassword()">
+          Update Password
+        </button>
+      </div>
+
+      <!-- Active Sessions -->
+      <div class="security-section">
+        <h4>Active Sessions</h4>
+        
+        <div *ngIf="isLoadingSessions" class="state-message" style="padding: 20px;">
+          <div class="spinner"></div>
+        </div>
+        
+        <div class="session-list" *ngIf="!isLoadingSessions">
+          <div *ngFor="let s of sessions" class="session-item">
+            <div class="session-item__icon">
+              <i class="material-icons">devices</i>
+            </div>
+            
+            <div class="session-item__info">
+              <div class="session-item__device">{{ s.device_name }}</div>
+              <div class="session-item__meta">
+                <span>IP: {{ s.ip_address }}</span> • 
+                <span>Last active: {{ s.last_active | date:'short' }}</span>
+              </div>
+            </div>
+            
+            <!-- Using the new Outline Danger button -->
+            <button class="btn btn--sm btn--outline-danger" (click)="revokeSession(s.id)">
+              Revoke
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PROFILE CARD -->
+  <div class="card">
+    <div class="card__header">
+      <h3>Profile</h3>
+    </div>
+    <div class="card__body">
+      <div class="form-group">
+        <label>Logged in as</label>
+        <input type="text" [value]="authService.currentUser()?.email" disabled>
+      </div>
+    </div>
+  </div>
+
+</div>

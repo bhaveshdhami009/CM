@@ -1,0 +1,405 @@
+/* src/app/features/chat/chat.component.scss */
+
+@use 'ui-components' as ui;
+@use 'modal';
+@use 'forms';
+
+/* --- 1. Main Layout --- */
+.chat-layout {
+  display: flex;
+  height: calc(95vh - var(--header-height)); // Fills the screen below the main app header
+  overflow: hidden;
+  background-color: var(--bg-color);
+}
+
+/* --- 2. Left Sidebar (Conversation List) --- */
+.chat-sidebar {
+  width: 320px;
+  background-color: var(--primary-color);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0; // Prevent sidebar from shrinking
+  transition: width 0.3s ease;
+
+  &__header {
+    height: 65px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    flex-shrink: 0;
+    
+    h2 { margin: 0; font-size: 1.25rem; color: var(--text-color); }
+  }
+
+  .conversation-list {
+    flex: 1; 
+    overflow-y: auto;
+  }
+}
+
+// Single Conversation Item in the List
+.convo-item {
+  display: flex; 
+  align-items: center;
+  gap: 15px; 
+  padding: 15px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s;
+  
+  &:hover { background-color: var(--bg-color); }
+  
+  &.active {
+    background-color: rgba(var(--accent-color-rgb), 0.08);
+    border-right: 3px solid var(--accent-color);
+  }
+  
+  .avatar {
+    width: 44px; height: 44px; 
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; 
+    font-weight: 700; color: var(--text-secondary);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  
+  .convo-info {
+    flex: 1; 
+    min-width: 0; // Fixes text truncation
+    
+    &__top { 
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;
+      .name { font-weight: 600; font-size: 0.95rem; color: var(--text-color); }
+    }
+    
+    &__preview { 
+      font-size: 0.85rem; 
+      color: var(--text-secondary); 
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+
+      &.bold-text {
+        font-weight: 700;
+        color: var(--text-color);
+      }
+    }
+  }
+}
+
+/* --- 3. Right Panel (Main Chat Window) --- */
+.chat-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-color);
+  min-width: 0;
+  
+  // Center content for empty state
+  justify-content: center;
+  align-items: center;
+}
+
+// THE FIX: New Empty State Styling
+.empty-chat-window {
+  text-align: center;
+  color: var(--text-secondary);
+  animation: fadeIn 0.5s ease-out;
+
+  &__icon {
+    font-size: 64px;
+    // A subtle background can look nice
+    background: linear-gradient(135deg, rgba(var(--accent-color-rgb), 0.05), rgba(var(--accent-color-rgb), 0.01));
+    color: var(--accent-color);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    opacity: 0.8;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 5px 0;
+  }
+
+  &__text {
+    font-size: 0.95rem;
+    margin: 0;
+  }
+}
+
+// Header of the Chat Window
+.window-header {
+  height: 65px;
+  background: var(--primary-color); 
+  border-bottom: 1px solid var(--border-color);
+  display: flex; 
+  align-items: center; 
+  padding: 0 20px; 
+  gap: 15px;
+  flex-shrink: 0;
+  
+  .mobile-back { display: none; } 
+
+  .avatar-small { 
+    width: 38px; height: 38px; 
+    background: linear-gradient(135deg, var(--accent-color), rgba(var(--accent-color-rgb), 0.8));
+    color: white; 
+    border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center; 
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(var(--accent-color-rgb), 0.3);
+  }
+  
+  .header-info {
+    flex: 1;
+    h3 { margin: 0; font-size: 1rem; color: var(--text-color); }
+    .subtitle { font-size: 0.8rem; color: var(--text-secondary); }
+  }
+}
+
+// Scrollable Area for Messages
+.messages-area {
+  flex: 1; 
+  overflow-y: auto; 
+  padding: 20px;
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; // Space between bubbles
+}
+
+// Banners (Invite, Blocked, etc.)
+.sticky-banner {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  
+  // Invite Banner (Yellow)
+  &.invite-banner {
+    background-color: #fff3e0; // Light Orange
+    border-bottom: 1px solid #ffe0b2;
+    
+    .banner-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #e65100; // Dark Orange Text
+        i { font-size: 20px; }
+        p { margin: 0; font-weight: 500; }
+    }
+  }
+}
+
+// --- 4. Chat Bubbles ---
+.message-row {
+  display: flex;
+  
+  &--me { 
+    justify-content: flex-end; 
+    
+    .bubble { 
+      background-color: var(--accent-color);
+      color: #ffffff;
+      border-radius: 18px 18px 4px 18px;
+      box-shadow: 0 2px 5px rgba(var(--accent-color-rgb), 0.3);
+
+      &__footer { color: rgba(255,255,255, 0.8); }
+      .attachment-card { background-color: rgba(255,255,255, 0.2); }
+    }
+  }
+  
+  &:not(.message-row--me) { 
+    .bubble { 
+      background-color: var(--primary-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 18px 18px 18px 4px;
+      
+      &__sender { 
+        color: var(--accent-color); 
+        font-weight: 700; font-size: 0.75rem; 
+        margin-bottom: 4px; display: block; 
+      }
+      &__footer { color: var(--text-secondary); }
+    }
+  }
+}
+
+.bubble {
+  max-width: 75%; 
+  padding: 10px 16px; 
+  word-wrap: break-word;
+  font-size: 0.95rem; 
+  line-height: 1.5;
+
+  &__footer {
+    display: flex; justify-content: flex-end; align-items: center; gap: 8px;
+    font-size: 0.7rem; margin-top: 4px; margin-bottom: -2px;
+    
+    .delete-icon { font-size: 14px; cursor: pointer; opacity: 0.6; &:hover { opacity: 1; } }
+  }
+  
+  .attachment-card {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 8px; padding: 10px;
+    background-color: var(--bg-color);
+    border-radius: 8px; font-size: 0.85rem; font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    
+    &:hover { opacity: 0.9; }
+    i { font-size: 20px; color: var(--text-secondary); }
+  }
+}
+
+// --- 5. Input Area at the Bottom ---
+.input-area {
+  padding: 15px; 
+  background: var(--primary-color);
+  display: flex; 
+  gap: 12px; 
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  position: relative;
+  
+  .msg-input { 
+    flex: 1; 
+    padding: 12px 18px; 
+    border-radius: 24px; 
+    border: 1px solid var(--border-color); 
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    outline: none; 
+    height: 48px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+    
+    &:focus { border-color: var(--accent-color); }
+  }
+}
+
+.blocked-msg-bar, .read-only-msg {
+  flex: 1;
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-color);
+  border-radius: 24px;
+  padding: 12px;
+}
+
+// --- 6. Mobile Responsiveness ---
+@media (max-width: 768px) {
+  .chat-sidebar {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transition: transform 0.3s ease;
+    
+    // Hide by moving off-screen
+    &.hidden-mobile {
+      transform: translateX(-100%);
+    }
+  }
+  
+  .chat-window {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transition: transform 0.3s ease;
+    transform: translateX(100%); // Start off-screen
+    
+    // Show by moving into view
+    &.active-mobile {
+      transform: translateX(0);
+    }
+    
+    .window-header .mobile-back { display: flex; }
+  }
+}
+
+// --- 7. Modal Specifics ---
+.view-switcher {
+  display: flex;
+  background-color: var(--bg-color);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 20px;
+
+  .switcher-btn {
+    flex: 1; 
+    background: transparent;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+
+    &.active {
+      background-color: var(--primary-color);
+      color: var(--accent-color);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      font-weight: 600;
+    }
+  }
+}
+
+.user-select-list {
+  max-height: 300px; 
+  overflow-y: auto; 
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-color);
+
+  .user-row { 
+    padding: 10px 15px; 
+    border-bottom: 1px solid var(--border-color); 
+    display: flex; align-items: center; gap: 12px; 
+    cursor: pointer; 
+    background-color: var(--primary-color);
+    transition: background 0.2s;
+    
+    &:last-child { border-bottom: none; }
+    &:hover { background: var(--bg-color); }
+    
+    &.selected {
+      background-color: rgba(var(--accent-color-rgb), 0.05);
+      .name { color: var(--accent-color); font-weight: 600; }
+    }
+    
+    .avatar-mini { 
+      width: 32px; height: 32px; 
+      background: var(--bg-color); border: 1px solid var(--border-color);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+      font-size: 0.8rem; color: var(--text-secondary);
+    }
+    
+    .name { flex: 1; color: var(--text-color); }
+  }
+}
+
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

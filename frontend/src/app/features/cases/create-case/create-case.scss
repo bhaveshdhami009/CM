@@ -1,0 +1,126 @@
+/* src/app/features/cases/create-case/create-case.component.scss */
+
+@use 'ui-components' as ui;
+@use 'modal';
+@use 'forms'; 
+
+// Page Title
+h2 {
+  margin-bottom: 20px;
+  color: var(--text-color);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+// --- Specific Section Styling ---
+
+// DLSA Section specific colors
+.dlsa-section {
+  background-color: rgba(40, 167, 69, 0.03); 
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  
+  // Override header color inside this specific section
+  .form-section__header h3 { color: #2e7d32; }
+}
+
+// Execution Section specific colors
+.execution-section {
+  background-color: rgba(255, 193, 7, 0.05);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  
+  .form-section__header h3 { color: #d39e00; }
+}
+
+// --- Custom Components ---
+
+// Selected Party Chips (Tag-like list)
+.selected-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  
+  .party-chip {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    transition: border-color 0.2s;
+    
+    &:hover { border-color: var(--accent-color); }
+    
+    .btn-remove {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      
+      &:hover { color: var(--danger-color); }
+    }
+  }
+}
+
+// Toggle Button (Custom Checkbox lookalike)
+.btn-toggle-option {
+  background: none;
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-color);
+  font-size: 0.9rem;
+  transition: all 0.2s;
+
+  i { font-size: 20px; color: var(--text-secondary); }
+
+  &:hover { background-color: var(--bg-color); }
+
+  &.active {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-color: #ffc107;
+    color: #d39e00;
+    font-weight: 500;
+    i { color: #ffc107; }
+  }
+}
+
+// Form Actions (Bottom Button)
+.form-actions {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.options-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  padding: 10px 15px;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+
+  .options-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+}

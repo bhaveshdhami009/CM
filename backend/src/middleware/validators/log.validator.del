@@ -1,0 +1,26 @@
+import { body } from 'express-validator';
+
+export const createLogValidator = [
+  body('log_date')
+    .notEmpty().withMessage('Date is required')
+    .isISO8601().withMessage('Invalid Date Format'),
+  
+  body('purpose')
+    .trim()
+    .notEmpty().withMessage('Purpose is required')
+    .escape(), // Prevents XSS
+  
+  body('remarks')
+    .optional()
+    .trim()
+    .escape(),
+  
+  body('is_pending')
+    .optional()
+    .isBoolean().withMessage('is_pending must be a boolean'),  
+
+  body('outcome')
+    .optional()
+    .trim()
+    .escape(),
+];

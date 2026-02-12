@@ -1,0 +1,22 @@
+import { body } from 'express-validator';
+
+export const createSettingValidator = [
+  // Validation for 'key' (Only required if provided in body)
+  body('key')
+    .optional()
+    .trim()
+    .matches(/^[a-z0-9_]+$/)
+    .withMessage('Key must be lowercase snake_case (e.g., my_setting_key)'),
+
+  // Validation for 'value'
+  // Since express.json() parses the body before validation, 
+  // 'value' will already be an Object/Array. We just check existence.
+  body('value')
+    .exists()
+    .withMessage('Value is required'),
+  
+  body('description')
+    .optional()
+    .trim()
+    .escape()
+];

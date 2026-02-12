@@ -1,0 +1,84 @@
+<div class="auth-wrapper fade-in">
+  <div class="auth-card">
+    
+    <!-- Header -->
+    <div class="auth-header">
+      <div class="logo-icon">⚖️</div>
+      <h1>Create Account</h1>
+      <p class="subtitle">Join the team and manage your cases</p>
+    </div>
+
+    <!-- Alerts -->
+    <div *ngIf="errorMessage" class="alert error">
+      <i class="material-icons">error_outline</i>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <div *ngIf="successMessage" class="alert success">
+      <i class="material-icons">check_circle</i>
+      <span>{{ successMessage }}</span>
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      
+      <!-- Full Name -->
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <div class="input-wrapper">
+          <i class="material-icons field-icon">person</i>
+          <input 
+            type="text" 
+            id="fullName" 
+            name="fullName" 
+            [(ngModel)]="userData.fullName" 
+            placeholder="John Doe" 
+            required 
+            [disabled]="isLoading">
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-wrapper">
+          <i class="material-icons field-icon">email</i>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            [(ngModel)]="userData.email" 
+            placeholder="name@company.com" 
+            required 
+            [disabled]="isLoading">
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <i class="material-icons field-icon">lock</i>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            [(ngModel)]="userData.password" 
+            placeholder="Create a strong password" 
+            required
+            [disabled]="isLoading">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Register</span>
+        <div *ngIf="isLoading" class="spinner-sm"></div>
+      </button>
+
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a routerLink="/login">Login here</a>
+    </div>
+
+  </div>
+</div>

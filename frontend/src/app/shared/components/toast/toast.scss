@@ -1,0 +1,51 @@
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 300px;
+  max-width: 450px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  color: white;
+  animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); // Bouncy animation
+  font-size: 0.95rem;
+
+  .content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    .icon { font-size: 20px; opacity: 0.9; }
+  }
+
+  /* Theme Colors */
+  &.success { background-color: #2e7d32; } /* Darker Green */
+  &.error { background-color: #c62828; }   /* Darker Red */
+  &.info { background-color: #0277bd; }    /* Darker Blue */
+
+  .btn-close {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+
+    &:hover { opacity: 1; }
+    i { font-size: 18px; }
+  }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

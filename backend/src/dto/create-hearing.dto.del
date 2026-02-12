@@ -1,0 +1,12 @@
+export interface CreateHearingDto {
+  hearing_date: string; // Timestamp (ISO string)
+  purpose: string;
+  
+  // Optional fields
+  court_room?: string;
+  remarks?: string;
+  outcome?: string;
+  judge_id?: number;
+
+  // REMOVED: next_date - The system handles linking automatically
+}

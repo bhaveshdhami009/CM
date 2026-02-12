@@ -1,0 +1,98 @@
+/* src/app/features/parties/party-list/party-list.component.scss */
+
+@use 'ui-components' as ui;
+@use 'modal';
+@use 'forms'; 
+
+.party-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+// --- Card Header Layout ---
+.card__header {
+  // Overriding default to handle complex layout
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; // Allows wrapping on small screens
+  gap: 20px;
+}
+
+.header-controls {
+  display: flex; 
+  gap: 15px; 
+  align-items: center;
+  flex-wrap: wrap; // Allows search box and button to wrap
+}
+
+// --- Table Cell Helpers ---
+.party-name {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.parentage-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9rem;
+  
+  &__father { font-weight: 500; }
+  &__mother { color: var(--text-secondary); }
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  
+  &__mobile, &__email {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  &__mobile { 
+    font-weight: 500; 
+    color: var(--text-color); 
+    i { font-size: 16px; }
+  }
+  
+  &__email { 
+    font-size: 0.85rem; 
+    color: var(--text-secondary); 
+  }
+}
+
+// --- Filter Row Styles ---
+.filter-row {
+  th {
+    padding: 8px 10px;
+    background-color: var(--bg-color);
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  input {
+    width: 100%;
+    height: 32px;
+    padding: 4px 10px;
+    box-sizing: border-box; 
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    font-size: 0.85rem;
+    outline: none;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.15);
+    }
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

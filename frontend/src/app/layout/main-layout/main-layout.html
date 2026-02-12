@@ -1,0 +1,182 @@
+<div class="app-container" 
+     [class.app-container--sidebar-collapsed]="isSidebarCollapsed && !isMobileView"
+     [class.app-container--mobile-sidebar-open]="isSidebarOpenOnMobile">
+
+  
+  <!-- SIDEBAR -->
+  <aside class="sidebar" [class.sidebar--mobile-open]="isSidebarOpenOnMobile">
+    <div class="sidebar__logo-area app-brand">
+      <div class="app-brand__icon">
+        <!-- Better Scales Icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- The center pole -->
+          <path d="M12 3v17" />
+          <!-- The top crossbar -->
+          <path d="M6 6h12" /> 
+          <!-- The left plate triangle connection -->
+          <path d="M6 6l-3 5" />
+          <path d="M6 6l3 5" />
+          <!-- The left plate curve -->
+          <path d="M3 11c0 1.66 1.34 3 3 3s3-1.34 3-3" />
+          <!-- The right plate triangle connection -->
+          <path d="M18 6l-3 5" />
+          <path d="M18 6l3 5" />
+          <!-- The right plate curve -->
+          <path d="M15 11c0 1.66 1.34 3 3 3s3-1.34 3-3" />
+        </svg>
+      </div>
+        
+      <div class="app-brand__text" *ngIf="!isSidebarCollapsed">
+        Legal<span class="highlight">App</span>
+      </div>
+    </div>
+    <nav class="sidebar__nav-menu">
+      <ng-container *ngFor="let item of menuItems()">
+        
+        <!-- 1. Single Item (has no children or has an empty children array) -->
+        <a *ngIf="!item.children || item.children.length === 0" 
+           [routerLink]="item.route" 
+           routerLinkActive="nav-item--active"
+           [routerLinkActiveOptions]="{exact: true}"
+           class="nav-item">
+          <i class="material-icons nav-item__icon">{{ item.icon }}</i>
+          <span class="nav-item__label" *ngIf="!isSidebarCollapsed">{{ item.label }}</span>
+        </a>
+
+        <!-- 2. Parent with Children (has a non-empty children array) -->
+        <div *ngIf="item.children && item.children.length > 0" class="nav-item-with-children">
+          <!-- The parent link -->
+          <a [routerLink]="item.route" 
+             routerLinkActive="nav-item--active"
+             [routerLinkActiveOptions]="{exact: false}"
+             class="nav-item parent">
+            <i class="material-icons nav-item__icon">{{ item.icon }}</i>
+            <span class="nav-item__label" *ngIf="!isSidebarCollapsed">{{ item.label }}</span>
+          </a>
+          <!-- The children list -->
+          <div class="children-list">
+            <a *ngFor="let child of item.children"
+               [routerLink]="child.route"
+               routerLinkActive="nav-item--active"
+               class="nav-item nav-item--child">
+               <i class="material-icons nav-item__icon">{{ child.icon }}</i>
+               <span class="nav-item__label" *ngIf="!isSidebarCollapsed">{{ child.label }}</span>
+            </a>
+          </div>
+        </div>
+
+      </ng-container>
+    </nav>
+    
+    <div class="sidebar__footer">
+      <a class="nav-item nav-item--logout" (click)="logout()">
+        <i class="material-icons nav-item__icon">logout</i>
+        <span class="sidebar__footer-text" *ngIf="!isSidebarCollapsed">Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <div class="sidebar-backdrop" 
+       *ngIf="isSidebarOpenOnMobile" 
+       (click)="closeMobileSidebar()"></div>
+       
+  <!-- MAIN CONTENT AREA -->
+  <main class="main-content">
+    
+    <!-- HEADER -->
+    <header class="header" [class.header--hidden]="isHeaderHidden">
+      <button class="header__toggle-btn" (click)="toggleSidebar()">
+        <i class="material-icons">menu</i>
+      </button>
+
+      <div class="header__actions">
+      
+        <!-- NEW: MESSAGES DROPDOWN -->
+        <div class="header__messages-wrapper">
+          <button class="theme-icon-btn" (click)="toggleMessagesDropdown()" title="Messages">
+             <div class="theme-icon-btn__inner">
+               <!-- Chat Bubble Icon -->
+               <i class="material-icons">chat_bubble_outline</i>
+               
+               <!-- Red Badge -->
+               <span class="notification-badge" *ngIf="totalUnreadCount > 0">
+                 {{ totalUnreadCount > 99 ? '99+' : totalUnreadCount }}
+               </span>
+             </div>
+          </button>
+
+          <!-- Dropdown Popup -->
+          <div class="msg-dropdown fade-in-up" *ngIf="isMessagesDropdownOpen">
+              <div class="msg-dropdown__header">
+                  <h4>Unread Messages</h4>
+                  <a (click)="openChat()" class="view-all-link">View All</a>
+              </div>
+              
+              <div class="msg-dropdown__body">
+                  <div *ngIf="unreadConversations.length === 0" class="empty-state">
+                      <i class="material-icons">check_circle</i>
+                      <p>All caught up!</p>
+                  </div>
+
+                  <!-- List of Unread Items (Limit to 5) -->
+                  <div *ngFor="let c of unreadConversations | slice:0:5" 
+                       class="msg-item" 
+                       (click)="openChat(c.id)">
+                      
+                      <div class="msg-avatar">
+                          {{ (c.displayName || '?').charAt(0) }}
+                      </div>
+                      <div class="msg-content">
+                          <div class="msg-top">
+                              <span class="name">{{ c.displayName }}</span>
+                              <span class="time">{{ c.last_message?.created_at | date:'shortTime' }}</span>
+                          </div>
+                          <div class="msg-preview">
+                              {{ c.last_message?.content || 'Attachment' }}
+                          </div>
+                      </div>
+                      <!-- Count Badge per chat -->
+                      <div class="msg-count" *ngIf="(c.unread_count || 0) > 0">
+                          {{ c.unread_count }}
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+        <!-- END MESSAGES -->
+        
+        <button class="theme-icon-btn" (click)="themeService.toggleTheme()" [title]="themeService.darkMode() ? 'Switch to Light' : 'Switch to Dark'">
+          <div class="theme-icon-btn__inner" [class.is-dark]="themeService.darkMode()">
+            <!-- Sun Icon -->
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            
+            <!-- Moon Icon -->
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </div>
+        </button>
+        
+        <div class="user-profile" [title]="currentUser()?.email">
+          <div class="user-profile__avatar">{{ userInitials }}</div> 
+        </div>
+      </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <div class="content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+  
+  </main>
+</div>

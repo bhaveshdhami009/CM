@@ -1,0 +1,134 @@
+<div class="master-container fade-in">
+  
+  <div class="card">
+    
+    <div class="card__header">
+      <h2>Master Data</h2>
+      
+      <div class="controls">
+        <select [(ngModel)]="selectedTable" (change)="onTableChange()" class="table-select">
+          <option *ngFor="let t of tables" [value]="t">{{ t }}</option>
+        </select>
+        
+        <button class="btn btn--primary" (click)="openModal()">
+          <i class="material-icons">add</i> Add New
+        </button>
+      </div>
+    </div>
+
+    <div class="card__body">
+      
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 80px;">ID</th>
+              <th>Name</th>
+              <!-- Conditional Column for District -->
+              <th *ngIf="selectedTable === 'Courts' || selectedTable === 'Establishments'">District</th>
+              <th style="width: 120px; text-align: right;">Actions</th>
+            </tr>
+            <tr class="filter-row">
+              <th></th>
+              <th>
+                <input type="text" [(ngModel)]="filterValues.name" (keyup)="applyFilters()" placeholder="Filter Name...">
+              </th>
+              <th *ngIf="selectedTable === 'Courts' || selectedTable === 'Establishments'">
+                <input type="text" [(ngModel)]="filterValues.district" (keyup)="applyFilters()" placeholder="Filter District...">
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Iterate over filteredData -->
+            <tr *ngFor="let item of filteredData" (dblclick)="openModal(item)">
+              <td>{{ item.id }}</td>
+              <td><strong>{{ item.name }}</strong></td>
+              
+              <td *ngIf="selectedTable === 'Courts' || selectedTable === 'Establishments'">
+                <span class="badge badge--default">{{ item.district?.name || '-' }}</span>
+              </td>
+              
+              <td style="text-align: right;">
+                <button class="btn btn--icon-only" (click)="openModal(item)" title="Edit">
+                  <i class="material-icons">edit</i>
+                </button>
+                <button class="btn btn--icon-only text-danger" (click)="deleteItem(item)" title="Delete">
+                  <i class="material-icons">delete</i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="isLoading" class="loading-state">
+          <div class="spinner"></div>
+      </div> 
+
+      <div *ngIf="!isLoading && filteredData.length === 0" class="state-message">
+          <p>No records found matching your filters.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- === MODAL === -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="modal-card__header">
+      <h3>{{ masterForm.get('id')?.value ? 'Edit' : 'Add' }} {{ selectedTable.slice(0, -1) }}</h3>
+      <button class="btn btn--icon-only" (click)="showModal = false">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+    
+    <form [formGroup]="masterForm" (ngSubmit)="save()">
+      <div class="modal-card__body">
+        
+        <!-- Name Field -->
+        <div class="form-group">
+          <label>Name <span class="text-danger">*</span></label>
+          <input formControlName="name" placeholder="Enter name">
+          <small class="error-text" *ngIf="masterForm.get('name')?.invalid && masterForm.get('name')?.touched">
+            Name is required.
+          </small>
+        </div>
+
+        <!-- State Field (For Districts) -->
+        <div class="form-group" *ngIf="selectedTable === 'Districts'">
+            <label>State</label>
+            <input formControlName="state" placeholder="e.g. Delhi">
+        </div>
+        
+        <!-- District Field (For Courts & Establishments) -->
+        <div class="form-group" *ngIf="selectedTable === 'Courts' || selectedTable === 'Establishments'">
+          <label>District <span class="text-danger">*</span></label>
+          <ng-select
+            [items]="districtsList"
+            bindLabel="name"
+            bindValue="id"
+            formControlName="district_id"
+            placeholder="Select a District"
+            [appendTo]="'body'">
+          </ng-select>
+          <small class="error-text" *ngIf="masterForm.get('district_id')?.invalid && masterForm.get('district_id')?.touched">
+             District is required.
+          </small>
+        </div>
+        
+      </div>
+
+      <div class="modal-card__footer">
+        <button type="button" class="btn btn--text" (click)="showModal = false">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn--primary" [disabled]="masterForm.invalid">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

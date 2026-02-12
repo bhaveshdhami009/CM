@@ -1,0 +1,125 @@
+/* src/styles/_modal.scss */
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px); // Modern glass effect
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-card {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  width: 100%;
+  max-width: 500px; // Default width
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh; // Prevent going off-screen on small devices
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); // Smooth spring-like pop
+
+  &--lg { max-width: 800px; } // Modifier for large modals
+
+  &__header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0; /* Never shrink */
+    
+    h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;          /* Take up remaining height */
+    min-height: 0;    /* Critical for nested flex scrolling */
+    overflow: hidden; /* Prevent spillover */
+  }
+
+  &__body {
+    padding: 24px;
+    overflow-y: auto; // Scroll body if too long
+    flex: 1;          /* Fill available space */
+    
+    /* Smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch; 
+  }
+
+  &__footer {
+    padding: 16px 24px;
+    background-color: var(--bg-color);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0; /* Never shrink or hide */
+    
+    /* Rounded corners at bottom */
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+  }
+}
+
+// Form Elements specifically for Modals
+.form-group {
+  margin-bottom: 20px;
+  
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  // Common input style
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.1);
+    }
+    
+    // Invalid State
+    &.ng-invalid.ng-touched {
+      border-color: var(--danger-color);
+      background-color: rgba(220, 53, 69, 0.02);
+    }
+  }
+
+  .error-text {
+    color: var(--danger-color);
+    font-size: 0.8rem;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+// Animations
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }

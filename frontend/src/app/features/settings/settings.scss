@@ -1,0 +1,139 @@
+/* src/app/features/settings/settings.component.scss */
+
+@use 'ui-components' as ui;
+@use 'forms';
+
+.settings-container {
+  max-width: 800px; // Narrower reading width is better for settings
+  margin: 0 auto;
+  padding: 20px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+// Page Title
+h1 {
+  margin-bottom: 25px;
+  color: var(--text-color);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+// --- Section Specifics ---
+
+// 1. Appearance Section
+.setting-group {
+  margin-bottom: 25px;
+  
+  &:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-color);
+  }
+}
+
+.color-picker {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  &__swatch {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent; // Invisible border for spacing
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s, border-color 0.2s;
+
+    &:hover { transform: scale(1.1); }
+    
+    &.active {
+      border-color: var(--text-color); // Ring effect
+      transform: scale(1.1);
+    }
+  }
+
+  // The actual color input
+  &__input {
+    width: 45px; height: 45px;
+    border: none; background: none; cursor: pointer;
+    padding: 0;
+  }
+}
+
+// 2. Security Section
+.security-section {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+
+  &:last-child { 
+    margin-bottom: 0; 
+    padding-bottom: 0; 
+    border-bottom: none; 
+  }
+  
+  h4 {
+    margin: 0 0 15px 0;
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+}
+
+// 3. Active Sessions List
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  transition: border-color 0.2s;
+
+  &:hover { border-color: var(--accent-color); }
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(var(--accent-color-rgb), 0.1);
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0; // Fix flex text overflow
+  }
+
+  &__device {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-color);
+    margin-bottom: 4px;
+  }
+
+  &__meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

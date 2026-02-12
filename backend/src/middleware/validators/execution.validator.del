@@ -1,0 +1,17 @@
+import { body } from 'express-validator';
+
+export const startExecutionValidator = [
+  body('amount')
+    .notEmpty().withMessage('Amount is required')
+    .isFloat({ min: 0 }).withMessage('Amount must be a positive number')
+    .toFloat(), // Sanitize to number
+
+  body('start_date')
+    .notEmpty().withMessage('Start Date is required')
+    .isISO8601().withMessage('Invalid Date Format'),
+
+  body('remarks')
+    .optional()
+    .trim()
+    .escape()
+];

@@ -1,0 +1,5 @@
+export interface CreateSettingDto {
+  key?: string; // Required for Create, ignored for Update
+  value: any;   // Can be Object, Array, String, Number
+  description?: string;
+}

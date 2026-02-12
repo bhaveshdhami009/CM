@@ -1,0 +1,29 @@
+import { body } from 'express-validator';
+
+export const masterDataValidator = [
+  body('name')
+    .trim() // Removes whitespace from both ends
+    .notEmpty().withMessage('Name is required')
+    .isLength({ min: 2 }).withMessage('Name must be at least 2 characters long')
+    .escape(), // Basic sanitization
+
+  // Optional: If district_id is provided (for Courts), ensure it is an integer
+  body('district_id')
+    .if(body('district_id').exists())
+    .isInt().withMessage('District ID must be an integer')
+    .toInt()
+];
+
+export const districtValidator = [
+  body('name').trim().notEmpty().withMessage('District name is required').escape(),
+  body('state').trim().notEmpty().withMessage('State is required').escape()
+];
+
+export const courtValidator = [
+  body('name').trim().notEmpty().withMessage('Court name is required').escape(),
+  body('district_id').isInt().withMessage('District ID is required and must be a number')
+];
+
+export const judgeValidator = [
+  body('name').trim().notEmpty().withMessage('Judge name is required').escape()
+];

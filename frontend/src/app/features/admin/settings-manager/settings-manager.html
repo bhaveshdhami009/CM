@@ -1,0 +1,127 @@
+<div class="manager-container fade-in">
+  
+  <!-- Main Card -->
+  <div class="card">
+    
+    <!-- Header -->
+    <div class="card__header">
+      <div>
+        <h1 style="margin: 0;">System Configuration</h1>
+        <p style="margin: 5px 0 0; color: var(--text-secondary); font-size: 0.9rem;">
+          Manage dynamic dropdowns and system variables.
+        </p>
+      </div>
+      
+      <button class="btn btn--primary" (click)="openCreateModal()">
+        <i class="material-icons">add</i> New Config
+      </button>  
+    </div>
+
+    <!-- Table -->
+    <div class="card__body">
+      
+      <div class="table-responsive" *ngIf="!isLoading">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Description</th>
+              <th>Last Updated</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of settingsList">
+              <!-- Use helper class for monospace font -->
+              <td class="font-mono">
+                {{ item.key }}
+              </td>
+              <td>{{ item.description }}</td>
+              <td>{{ item.created_at | date:'mediumDate' }}</td>
+              <td style="text-align: right;">
+                <button class="btn btn--icon-only" (click)="openEditModal(item)" title="Edit Configuration">
+                  <i class="material-icons">edit_note</i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+        <div class="spinner-sm" style="margin: 0 auto 10px; border-color: var(--text-secondary); border-top-color: var(--accent-color);"></div>
+        <p>Loading configurations...</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- JSON Editor Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal = false">
+  <!-- .modal-card--lg makes it wider for code editing -->
+  <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()">
+    
+    <div class="modal-card__header">
+      <h3>{{ isEditMode ? 'Edit Config' : 'New Config' }}</h3>
+      <button class="btn btn--icon-only" (click)="showModal = false">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+
+    <form [formGroup]="settingForm" (ngSubmit)="save()">
+      <div class="modal-card__body">
+        
+        <!-- Key Field -->
+        <div class="form-group">
+          <label>Config Key <span style="color: red">*</span></label>
+          <input formControlName="key" placeholder="e.g. case_statuses">
+          
+          <small style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 4px;" *ngIf="!isEditMode">
+            Use snake_case. Unique identifier.
+          </small>
+          
+          <small class="error-text" *ngIf="settingForm.get('key')?.errors?.['pattern'] && settingForm.get('key')?.touched">
+            <i class="material-icons" style="font-size: 14px">error</i>
+            Invalid format. Use lowercase letters and underscores only.
+          </small>
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+          <label>Description</label>
+          <input formControlName="description" placeholder="What is this setting for?">
+        </div>
+        
+        <!-- JSON Editor Field -->
+        <div class="form-group">
+          <label>Configuration Value (JSON) <span style="color: red">*</span></label>
+          
+          <textarea 
+            formControlName="valueString" 
+            class="code-editor"
+            spellcheck="false"
+            placeholder="// Enter JSON configuration here...">
+          </textarea>
+          
+          <small class="error-text" *ngIf="settingForm.get('valueString')?.errors?.['invalidJson'] && settingForm.get('valueString')?.touched">
+            <i class="material-icons" style="font-size: 14px">error</i>
+            Syntax Error: Invalid JSON format. Check quotes and commas.
+          </small>
+        </div>
+
+      </div>
+
+      <div class="modal-card__footer">
+        <button type="button" class="btn" (click)="showModal = false" style="color: var(--text-secondary)">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn--primary" [disabled]="settingForm.invalid">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

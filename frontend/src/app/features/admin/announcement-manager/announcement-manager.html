@@ -1,0 +1,155 @@
+<div class="manager-container fade-in">
+  
+  <div class="card">
+    
+    <div class="card__header">
+      <div class="title-group">
+        <h1>Announcements</h1>
+        <p class="subtitle">Broadcast messages to your team or the entire system.</p>
+      </div>
+      <button class="btn btn--primary" (click)="openCreateModal()">
+        <i class="material-icons">campaign</i> New Announcement
+      </button>
+    </div>
+
+    <div class="card__body" style="padding: 0;">
+
+      <div class="table-responsive" *ngIf="!isLoading">
+        <table class="data-table">
+          <thead>
+            <!-- Header Row -->
+            <tr>
+              <th style="width: 25%;">Title</th>
+              <th style="width: 40%;">Message</th>
+              <th style="width: 15%;">Scope</th>
+              <th style="width: 15%;">Expires</th>
+              <th style="width: 5%; text-align: right;"></th>
+            </tr>
+            <!-- Filter Row -->
+            <tr class="filter-row">
+              <th>
+                <input type="text" class="filter-input" 
+                       [(ngModel)]="filterValues.title" 
+                       (input)="onFilterChange()" 
+                       placeholder="Filter Title...">
+              </th>
+              <th>
+                <input type="text" class="filter-input" 
+                       [(ngModel)]="filterValues.message" 
+                       (input)="onFilterChange()" 
+                       placeholder="Filter Message...">
+              </th>
+              <th>
+                <select class="filter-select" 
+                        [(ngModel)]="filterValues.scope" 
+                        (change)="onFilterChange()">
+                  <option value="">All</option>
+                  <option value="ORG">Org</option>
+                  <option value="GLOBAL">Global</option>
+                </select>
+              </th>
+              <th>
+                <input type="text" class="filter-input" 
+                       [(ngModel)]="filterValues.expires" 
+                       (input)="onFilterChange()" 
+                       placeholder="Filter Date...">
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Iterate over FILTERED list -->
+            <tr *ngFor="let item of filteredAnnouncements">
+              <td style="font-weight: 600;">{{ item.title }}</td>
+              
+              <td>
+                <div class="truncate-text" [title]="item.message">{{ item.message }}</div>
+              </td>
+              
+              <td>
+                <span class="badge" 
+                      [class.badge--default]="item.scope !== 'GLOBAL'"
+                      [class.badge--global]="item.scope === 'GLOBAL'">
+                  {{ item.scope }}
+                </span>
+              </td>
+              
+              <td>
+                {{ item.expires_at ? (item.expires_at | date:'mediumDate') : 'Never' }}
+              </td>
+              
+              <td style="text-align: right;">
+                <button class="btn btn--icon-only text-danger" (click)="deleteItem(item)">
+                  <i class="material-icons">delete_outline</i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="isLoading" class="state-message">
+        <div class="spinner"></div>
+        <p class="state-message__text">Loading announcements...</p>
+      </div>
+
+      <div *ngIf="!isLoading && announcements.length === 0" class="state-message">
+        <i class="material-icons state-message__icon">campaign</i>
+        <p class="state-message__text">No announcements posted.</p>
+      </div>
+      
+      <div *ngIf="!isLoading && announcements.length > 0 && filteredAnnouncements.length === 0" class="state-message">
+        <p class="state-message__text">No results found matching filters.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal remains same -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal = false">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="modal-card__header">
+      <h3>New Announcement</h3>
+      <button class="btn btn--icon-only" (click)="showModal = false">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+    
+    <form [formGroup]="announcementForm" (ngSubmit)="save()">
+      <div class="modal-card__body">
+        
+        <div class="form-group">
+          <label>Title <span class="text-danger">*</span></label>
+          <input formControlName="title" placeholder="e.g. System Maintenance">
+        </div>
+
+        <div class="form-group" *ngIf="isPlatformAdmin">
+          <label>Visibility Scope</label>
+          <select formControlName="scope">
+            <option value="ORG">My Organization Only</option>
+            <option value="GLOBAL">Global (All Firms)</option>
+          </select>
+          <small class="hint">Global announcements are visible to everyone.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Message <span class="text-danger">*</span></label>
+          <textarea formControlName="message" rows="4" placeholder="Enter your message here..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Expiration Date (Optional)</label>
+          <input type="date" formControlName="expires_at">
+          <small class="hint">Message will disappear automatically after this date.</small>
+        </div>
+
+      </div>
+
+      <div class="modal-card__footer">
+        <button type="button" class="btn btn--text" (click)="showModal = false">Cancel</button>
+        <button type="submit" class="btn btn--primary" [disabled]="announcementForm.invalid">Post Message</button>
+      </div>
+    </form>
+  </div>
+</div>
