@@ -26,6 +26,8 @@ import chatRouter from './api/chat.routes.js'; // Ensure this path is correct
 
 import * as useragent from 'express-useragent'; 
 
+console.log("JWT_SECRET:", process.env.JWT_SECRET);
+
 const main = async () => {
   try {
     // 1. Database Initialization
