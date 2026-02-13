@@ -46,7 +46,7 @@ export class ChatService {
     const token = this.authService.getToken();
     if (this.socket?.connected) return;
 
-    this.socket = io('http://localhost:3000', {
+    this.socket = io(undefined, {
       auth: { token }
     });
 
